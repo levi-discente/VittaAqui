@@ -64,6 +64,8 @@ go install github.com/swaggo/swag/cmd/swag@latest
 swag init
 ```
 
+> **Se você não tiver o atalho com "swag" rode usando ~/go/bin/swag no lugar.**
+
 ### 7. **Rode o servidor Go**
 
 ```sh
