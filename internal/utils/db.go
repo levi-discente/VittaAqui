@@ -1,0 +1,21 @@
+package utils
+
+import (
+	"log"
+	"vittaAqui/internal/config"
+	"vittaAqui/internal/models"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+)
+
+func ConnectDatabase(cfg config.Config) *gorm.DB {
+	db, err := gorm.Open(postgres.Open(cfg.GetDSN()), &gorm.Config{})
+	if err != nil {
+		log.Fatal("Failed to connect to database: ", err)
+	}
+
+	db.AutoMigrate(&models.User{})
+
+	return db
+}
