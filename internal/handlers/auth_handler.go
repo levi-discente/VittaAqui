@@ -10,26 +10,41 @@ import (
 
 // Register godoc
 // @Summary      Cadastro de usuário
-// @Description  Cria um novo usuário no sistema
+// @Description  Cria um novo usuário no sistema (profissional já cria perfil)
 // @Tags         auth
-// @Accept       json
+// @Accept       x-www-form-urlencoded
 // @Produce      json
-// @Param        user  body      models.UserRegisterRequest  true  "Dados do usuário"
+// @Param        name     formData string true "Nome"
+// @Param        email    formData string true "Email"
+// @Param        password formData string true "Senha"
+// @Param        role     formData string true "Role (patient/professional)"
+// @Param        bio      formData string false "Bio do profissional (se profissional)"
+// @Param        category formData string false "Categoria profissional (se profissional)"
 // @Success      200   {object}  map[string]interface{}
 // @Failure      400   {object}  map[string]interface{}
 // @Failure      500   {object}  map[string]interface{}
 // @Router       /auth/register [post]
 func (h *UserHandler) Register(c *fiber.Ctx) error {
-	user := new(models.UserRegisterRequest)
-	if err := c.BodyParser(user); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "cannot parse JSON"})
+	name := c.FormValue("name")
+	email := c.FormValue("email")
+	password := c.FormValue("password")
+	role := c.FormValue("role")
+
+	if name == "" || email == "" || password == "" || role == "" {
+		return c.Status(400).JSON(fiber.Map{"error": "missing required fields"})
 	}
-	if err := h.service.Register(&models.User{
-		Name:     user.Name,
-		Email:    user.Email,
-		Password: user.Password,
-		Role:     user.Role,
-	}); err != nil {
+
+	req := models.UserRegisterRequest{
+		Name:     name,
+		Email:    email,
+		Password: password,
+		Role:     role,
+	}
+
+	bio := c.FormValue("bio")
+	category := c.FormValue("category")
+
+	if err := h.service.Register(&req, bio, category); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 	return c.JSON(fiber.Map{"message": "registered"})
@@ -39,19 +54,23 @@ func (h *UserHandler) Register(c *fiber.Ctx) error {
 // @Summary      Login de usuário
 // @Description  Autentica o usuário e retorna o token JWT
 // @Tags         auth
-// @Accept       json
+// @Accept       x-www-form-urlencoded
 // @Produce      json
-// @Param        login  body      models.UserLoginRequest  true  "Credenciais do usuário"
+// @Param        email    formData string true "Email"
+// @Param        password formData string true "Senha"
 // @Success      200    {object}  models.LoginResponse
 // @Failure      400    {object}  map[string]interface{}
 // @Failure      401    {object}  map[string]interface{}
 // @Router       /auth/login [post]
 func (h *UserHandler) Login(c *fiber.Ctx) error {
-	req := new(models.UserLoginRequest)
-	if err := c.BodyParser(req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "cannot parse JSON"})
+	email := c.FormValue("email")
+	password := c.FormValue("password")
+
+	if email == "" || password == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "missing email or password"})
 	}
-	user, err := h.service.Login(req.Email, req.Password)
+
+	user, err := h.service.Login(email, password)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid credentials"})
 	}

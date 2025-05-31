@@ -19,7 +19,7 @@ const docTemplate = `{
             "post": {
                 "description": "Autentica o usuário e retorna o token JWT",
                 "consumes": [
-                    "application/json"
+                    "application/x-www-form-urlencoded"
                 ],
                 "produces": [
                     "application/json"
@@ -30,13 +30,18 @@ const docTemplate = `{
                 "summary": "Login de usuário",
                 "parameters": [
                     {
-                        "description": "Credenciais do usuário",
-                        "name": "login",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.UserLoginRequest"
-                        }
+                        "type": "string",
+                        "description": "Email",
+                        "name": "email",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Senha",
+                        "name": "password",
+                        "in": "formData",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -65,9 +70,9 @@ const docTemplate = `{
         },
         "/auth/register": {
             "post": {
-                "description": "Cria um novo usuário no sistema",
+                "description": "Cria um novo usuário no sistema (profissional já cria perfil)",
                 "consumes": [
-                    "application/json"
+                    "application/x-www-form-urlencoded"
                 ],
                 "produces": [
                     "application/json"
@@ -78,13 +83,44 @@ const docTemplate = `{
                 "summary": "Cadastro de usuário",
                 "parameters": [
                     {
-                        "description": "Dados do usuário",
-                        "name": "user",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.UserRegisterRequest"
-                        }
+                        "type": "string",
+                        "description": "Nome",
+                        "name": "name",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Email",
+                        "name": "email",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Senha",
+                        "name": "password",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Role (patient/professional)",
+                        "name": "role",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bio do profissional (se profissional)",
+                        "name": "bio",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Categoria profissional (se profissional)",
+                        "name": "category",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -104,6 +140,285 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/professional/list": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "professional"
+                ],
+                "summary": "Lista perfis profissionais com filtros",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Categoria do profissional",
+                        "name": "category",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Nome do profissional",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Tags separadas por vírgula",
+                        "name": "tags",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Apenas online",
+                        "name": "only_online",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Apenas presencial",
+                        "name": "only_presential",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.ProfessionalProfileResponse"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/professional/profile": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "professional"
+                ],
+                "summary": "Cria perfil profissional",
+                "parameters": [
+                    {
+                        "description": "Dados do perfil profissional",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ProfessionalProfile"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProfessionalProfileResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/professional/profile/user/{user_id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "professional"
+                ],
+                "summary": "Busca perfil profissional pelo userID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID do usuário",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProfessionalProfileResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/professional/profile/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "professional"
+                ],
+                "summary": "Busca perfil profissional pelo profileID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID do perfil profissional",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProfessionalProfileResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "professional"
+                ],
+                "summary": "Edita perfil profissional (owner only)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID do perfil profissional",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Novos dados do perfil",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ProfessionalProfile"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ProfessionalProfileResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "professional"
+                ],
+                "summary": "Remove perfil profissional (owner only)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID do perfil profissional",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -338,31 +653,47 @@ const docTemplate = `{
                 }
             }
         },
-        "models.UserLoginRequest": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                }
-            }
+        "models.ProfessionalProfile": {
+            "type": "object"
         },
-        "models.UserRegisterRequest": {
+        "models.ProfessionalProfileResponse": {
             "type": "object",
             "properties": {
-                "email": {
+                "bio": {
                     "type": "string"
                 },
-                "name": {
+                "category": {
                     "type": "string"
                 },
-                "password": {
+                "id": {
+                    "type": "integer"
+                },
+                "num_reviews": {
+                    "type": "integer"
+                },
+                "only_online": {
+                    "type": "boolean"
+                },
+                "only_presential": {
+                    "type": "boolean"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "rating": {
+                    "type": "number"
+                },
+                "services": {
                     "type": "string"
                 },
-                "role": {
-                    "type": "string"
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "user_id": {
+                    "type": "integer"
                 }
             }
         },

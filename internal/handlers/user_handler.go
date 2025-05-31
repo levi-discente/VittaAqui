@@ -10,11 +10,11 @@ import (
 )
 
 type UserHandler struct {
-	service *services.UserService
+	service services.UserServiceInterface
 	cfg     config.Config
 }
 
-func NewUserHandler(service *services.UserService, cfg config.Config) *UserHandler {
+func NewUserHandler(service services.UserServiceInterface, cfg config.Config) *UserHandler {
 	return &UserHandler{service, cfg}
 }
 
@@ -50,7 +50,7 @@ func (h *UserHandler) GetMe(c *fiber.Ctx) error {
 		ID:    user.ID,
 		Name:  user.Name,
 		Email: user.Email,
-		Role:  user.Role,
+		Role:  string(user.Role),
 	})
 }
 
@@ -91,7 +91,7 @@ func (h *UserHandler) UpdateMe(c *fiber.Ctx) error {
 		ID:    user.ID,
 		Name:  user.Name,
 		Email: user.Email,
-		Role:  user.Role,
+		Role:  string(user.Role),
 	})
 }
 
@@ -168,7 +168,7 @@ func (h *UserHandler) GetUserByID(c *fiber.Ctx) error {
 		ID:    user.ID,
 		Name:  user.Name,
 		Email: user.Email,
-		Role:  user.Role,
+		Role:  string(user.Role),
 	})
 }
 
@@ -195,7 +195,7 @@ func (h *UserHandler) GetAllUsers(c *fiber.Ctx) error {
 			ID:    user.ID,
 			Name:  user.Name,
 			Email: user.Email,
-			Role:  user.Role,
+			Role:  string(user.Role),
 		})
 	}
 	return c.JSON(resp)

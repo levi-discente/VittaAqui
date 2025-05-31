@@ -29,8 +29,12 @@ func main() {
 	cfg := config.LoadConfig()
 	db := utils.ConnectDatabase(cfg)
 
+	professionalRepo := repositories.NewProfessionalProfileRepository(db)
+	professionalService := services.NewProfessionalProfileService(professionalRepo)
+	professionalHandler := handlers.NewProfessionalProfileHandler(professionalService)
+
 	userRepo := repositories.NewUserRepository(db)
-	userService := services.NewUserService(userRepo)
+	userService := services.NewUserService(userRepo, professionalService)
 	userHandler := handlers.NewUserHandler(userService, cfg)
 
 	app := fiber.New()
@@ -53,6 +57,15 @@ func main() {
 	// Só admin ou o próprio usuário deve acessar as rotas abaixo (faça a checagem nos handlers!)
 	user.Get("/:id", userHandler.GetUserByID)
 	user.Get("/", userHandler.GetAllUsers)
+
+	prof := app.Group("/professional")
+
+	prof.Post("/profile", middlewares.RequireAuth(cfg.JWTSecret), professionalHandler.CreateProfile)
+	prof.Get("/profile/user/:user_id", professionalHandler.GetByUserID)
+	prof.Get("/profile/:id", professionalHandler.GetByProfessionalID)
+	prof.Get("/list", professionalHandler.ListProfessionals)
+	prof.Put("/profile/:id", middlewares.RequireAuth(cfg.JWTSecret), professionalHandler.EditProfile)
+	prof.Delete("/profile/:id", middlewares.RequireAuth(cfg.JWTSecret), professionalHandler.DeleteProfile)
 
 	log.Fatal(app.Listen(":8000"))
 }

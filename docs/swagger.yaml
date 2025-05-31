@@ -4,23 +4,34 @@ definitions:
       token:
         type: string
     type: object
-  models.UserLoginRequest:
-    properties:
-      email:
-        type: string
-      password:
-        type: string
+  models.ProfessionalProfile:
     type: object
-  models.UserRegisterRequest:
+  models.ProfessionalProfileResponse:
     properties:
-      email:
+      bio:
         type: string
-      name:
+      category:
         type: string
-      password:
+      id:
+        type: integer
+      num_reviews:
+        type: integer
+      only_online:
+        type: boolean
+      only_presential:
+        type: boolean
+      price:
+        type: number
+      rating:
+        type: number
+      services:
         type: string
-      role:
-        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      user_id:
+        type: integer
     type: object
   models.UserResponse:
     properties:
@@ -51,15 +62,19 @@ paths:
   /auth/login:
     post:
       consumes:
-      - application/json
+      - application/x-www-form-urlencoded
       description: Autentica o usuário e retorna o token JWT
       parameters:
-      - description: Credenciais do usuário
-        in: body
-        name: login
+      - description: Email
+        in: formData
+        name: email
         required: true
-        schema:
-          $ref: '#/definitions/models.UserLoginRequest'
+        type: string
+      - description: Senha
+        in: formData
+        name: password
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -83,15 +98,37 @@ paths:
   /auth/register:
     post:
       consumes:
-      - application/json
-      description: Cria um novo usuário no sistema
+      - application/x-www-form-urlencoded
+      description: Cria um novo usuário no sistema (profissional já cria perfil)
       parameters:
-      - description: Dados do usuário
-        in: body
-        name: user
+      - description: Nome
+        in: formData
+        name: name
         required: true
-        schema:
-          $ref: '#/definitions/models.UserRegisterRequest'
+        type: string
+      - description: Email
+        in: formData
+        name: email
+        required: true
+        type: string
+      - description: Senha
+        in: formData
+        name: password
+        required: true
+        type: string
+      - description: Role (patient/professional)
+        in: formData
+        name: role
+        required: true
+        type: string
+      - description: Bio do profissional (se profissional)
+        in: formData
+        name: bio
+        type: string
+      - description: Categoria profissional (se profissional)
+        in: formData
+        name: category
+        type: string
       produces:
       - application/json
       responses:
@@ -113,6 +150,187 @@ paths:
       summary: Cadastro de usuário
       tags:
       - auth
+  /professional/list:
+    get:
+      parameters:
+      - description: Categoria do profissional
+        in: query
+        name: category
+        type: string
+      - description: Nome do profissional
+        in: query
+        name: name
+        type: string
+      - description: Tags separadas por vírgula
+        in: query
+        name: tags
+        type: string
+      - description: Apenas online
+        in: query
+        name: only_online
+        type: boolean
+      - description: Apenas presencial
+        in: query
+        name: only_presential
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.ProfessionalProfileResponse'
+            type: array
+      summary: Lista perfis profissionais com filtros
+      tags:
+      - professional
+  /professional/profile:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados do perfil profissional
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/models.ProfessionalProfile'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ProfessionalProfileResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Cria perfil profissional
+      tags:
+      - professional
+  /professional/profile/{id}:
+    delete:
+      parameters:
+      - description: ID do perfil profissional
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Remove perfil profissional (owner only)
+      tags:
+      - professional
+    get:
+      parameters:
+      - description: ID do perfil profissional
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ProfessionalProfileResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Busca perfil profissional pelo profileID
+      tags:
+      - professional
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID do perfil profissional
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Novos dados do perfil
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/models.ProfessionalProfile'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ProfessionalProfileResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Edita perfil profissional (owner only)
+      tags:
+      - professional
+  /professional/profile/user/{user_id}:
+    get:
+      parameters:
+      - description: ID do usuário
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ProfessionalProfileResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Busca perfil profissional pelo userID
+      tags:
+      - professional
   /user:
     get:
       consumes:

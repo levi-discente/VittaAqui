@@ -9,21 +9,50 @@ import (
 )
 
 type UserService struct {
-	repo *repositories.UserRepository
+	repo               *repositories.UserRepository
+	profProfileService *ProfessionalProfileService
 }
 
-func NewUserService(repo *repositories.UserRepository) *UserService {
-	return &UserService{repo}
+type UserServiceInterface interface {
+	Register(req *models.UserRegisterRequest, bio, category string) error
+	Login(email, password string) (*models.User, error)
+	GetByID(id uint) (*models.User, error)
+	UpdateProfile(id uint, req *models.UserUpdateRequest) (*models.User, error)
+	DeleteUser(id uint) error
+	GetAll() ([]models.User, error)
 }
 
-func (s *UserService) Register(user *models.User) error {
-	// Hash da senha
-	hashed, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+func NewUserService(repo *repositories.UserRepository, profProfileService *ProfessionalProfileService) *UserService {
+	return &UserService{repo, profProfileService}
+}
+
+func (s *UserService) Register(req *models.UserRegisterRequest, bio, category string) error {
+	hashed, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
-	user.Password = string(hashed)
-	return s.repo.Create(user)
+	role, err := models.ParseRole(req.Role)
+	if err != nil {
+		return err
+	}
+	user := &models.User{
+		Name:     req.Name,
+		Email:    req.Email,
+		Password: string(hashed),
+		Role:     role,
+	}
+	if err := s.repo.Create(user); err != nil {
+		return err
+	}
+	if role == models.RoleProfessional {
+		profile := &models.ProfessionalProfile{
+			UserID:   user.ID,
+			Bio:      bio,
+			Category: models.ProfessionalCategory(category),
+		}
+		_ = s.profProfileService.CreateProfile(user.ID, profile)
+	}
+	return nil
 }
 
 func (s *UserService) Login(email, password string) (*models.User, error) {
@@ -48,7 +77,7 @@ func (s *UserService) UpdateProfile(id uint, req *models.UserUpdateRequest) (*mo
 	}
 	user.Name = req.Name
 	user.Email = req.Email
-	user.Role = req.Role
+	user.Role = models.Role(req.Role)
 	err = s.repo.Update(user)
 	return user, err
 }

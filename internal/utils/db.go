@@ -15,7 +15,7 @@ func ConnectDatabase(cfg config.Config) *gorm.DB {
 		log.Fatal("Failed to connect to database: ", err)
 	}
 
-	db.AutoMigrate(&models.User{})
+	db.AutoMigrate(&models.User{}, &models.ProfessionalProfile{}, &models.ProfileTag{})
 
 	return db
 }
