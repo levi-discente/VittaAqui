@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 	"vittaAqui/internal/config"
-	"vittaAqui/internal/handlers"
+	"vittaAqui/internal/controller"
 	"vittaAqui/internal/models"
 	"vittaAqui/internal/services"
 
@@ -40,7 +40,7 @@ func TestRegisterHandler(t *testing.T) {
 		},
 	}
 	testCfg := config.Config{JWTSecret: "secret-for-tests"}
-	handler := handlers.NewUserHandler(mockService, testCfg)
+	handler := controller.NewUserHandler(mockService, testCfg)
 
 	app.Post("/auth/register", handler.Register)
 
@@ -70,7 +70,7 @@ func TestLoginHandler(t *testing.T) {
 		},
 	}
 	testCfg := config.Config{JWTSecret: "secret-for-tests"}
-	handler := handlers.NewUserHandler(mockService, testCfg)
+	handler := controller.NewUserHandler(mockService, testCfg)
 
 	app.Post("/auth/login", handler.Login)
 
@@ -93,7 +93,7 @@ func TestRegisterHandler_Error(t *testing.T) {
 		},
 	}
 	testCfg := config.Config{JWTSecret: "secret-for-tests"}
-	handler := handlers.NewUserHandler(mockService, testCfg)
+	handler := controller.NewUserHandler(mockService, testCfg)
 
 	app.Post("/auth/register", handler.Register)
 
@@ -120,7 +120,7 @@ func TestRegisterHandler_MissingFields(t *testing.T) {
 		},
 	}
 	testCfg := config.Config{JWTSecret: "secret-for-tests"}
-	handler := handlers.NewUserHandler(mockService, testCfg)
+	handler := controller.NewUserHandler(mockService, testCfg)
 	app.Post("/auth/register", handler.Register)
 
 	form := url.Values{}
@@ -140,7 +140,7 @@ func TestLoginHandler_Error(t *testing.T) {
 		},
 	}
 	testCfg := config.Config{JWTSecret: "secret-for-tests"}
-	handler := handlers.NewUserHandler(mockService, testCfg)
+	handler := controller.NewUserHandler(mockService, testCfg)
 	app.Post("/auth/login", handler.Login)
 
 	form := url.Values{}
@@ -161,7 +161,7 @@ func TestLoginHandler_MissingFields(t *testing.T) {
 		},
 	}
 	testCfg := config.Config{JWTSecret: "secret-for-tests"}
-	handler := handlers.NewUserHandler(mockService, testCfg)
+	handler := controller.NewUserHandler(mockService, testCfg)
 	app.Post("/auth/login", handler.Login)
 
 	form := url.Values{}

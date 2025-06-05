@@ -1,10 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "Documentação da API vittaAqui",
-        "title": "vittaAqui API",
-        "contact": {},
-        "version": "1.0"
+        "contact": {}
     },
     "paths": {
         "/auth/login": {
@@ -642,6 +639,9 @@
             "properties": {
                 "token": {
                     "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/models.UserResponse"
                 }
             }
         },
@@ -719,13 +719,6 @@
                     "type": "string"
                 }
             }
-        }
-    },
-    "securityDefinitions": {
-        "BearerAuth": {
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header"
         }
     }
 }

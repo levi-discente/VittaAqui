@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-	"vittaAqui/internal/handlers"
+	"vittaAqui/internal/controller"
 	"vittaAqui/internal/models"
 	"vittaAqui/internal/services"
 
@@ -56,7 +56,7 @@ func TestCreateProfile(t *testing.T) {
 			return nil
 		},
 	}
-	handler := handlers.NewProfessionalProfileHandler(mockService)
+	handler := controller.NewProfessionalProfileHandler(mockService)
 	app.Post("/professional/profile", func(c *fiber.Ctx) error {
 		c.Locals("user_id", uint(1))
 		return handler.CreateProfile(c)
@@ -81,7 +81,7 @@ func TestGetByUserID(t *testing.T) {
 			}, nil
 		},
 	}
-	handler := handlers.NewProfessionalProfileHandler(mockService)
+	handler := controller.NewProfessionalProfileHandler(mockService)
 	app.Get("/professional/profile/user/:user_id", handler.GetByUserID)
 
 	req := httptest.NewRequest("GET", "/professional/profile/user/123", nil)
@@ -101,7 +101,7 @@ func TestGetByProfessionalID(t *testing.T) {
 			}, nil
 		},
 	}
-	handler := handlers.NewProfessionalProfileHandler(mockService)
+	handler := controller.NewProfessionalProfileHandler(mockService)
 	app.Get("/professional/profile/:id", handler.GetByProfessionalID)
 
 	req := httptest.NewRequest("GET", "/professional/profile/55", nil)
@@ -119,7 +119,7 @@ func TestListProfessionals(t *testing.T) {
 			}, nil
 		},
 	}
-	handler := handlers.NewProfessionalProfileHandler(mockService)
+	handler := controller.NewProfessionalProfileHandler(mockService)
 	app.Get("/professional/list", handler.ListProfessionals)
 
 	req := httptest.NewRequest("GET", "/professional/list?category=nutritionist&name=Ana", nil)
@@ -145,7 +145,7 @@ func TestEditProfile(t *testing.T) {
 			}, nil
 		},
 	}
-	handler := handlers.NewProfessionalProfileHandler(mockService)
+	handler := controller.NewProfessionalProfileHandler(mockService)
 	app.Put("/professional/profile/:id", func(c *fiber.Ctx) error {
 		c.Locals("user_id", uint(1))
 		return handler.EditProfile(c)
@@ -165,7 +165,7 @@ func TestDeleteProfile(t *testing.T) {
 			return nil
 		},
 	}
-	handler := handlers.NewProfessionalProfileHandler(mockService)
+	handler := controller.NewProfessionalProfileHandler(mockService)
 	app.Delete("/professional/profile/:id", func(c *fiber.Ctx) error {
 		c.Locals("user_id", uint(1))
 		return handler.DeleteProfile(c)
@@ -185,7 +185,7 @@ func TestCreateProfile_Error(t *testing.T) {
 			return errors.New("erro de criação")
 		},
 	}
-	handler := handlers.NewProfessionalProfileHandler(mockService)
+	handler := controller.NewProfessionalProfileHandler(mockService)
 	app.Post("/professional/profile", func(c *fiber.Ctx) error {
 		c.Locals("user_id", uint(1))
 		return handler.CreateProfile(c)
@@ -208,7 +208,7 @@ func TestCreateProfile_BadRequest(t *testing.T) {
 			return nil
 		},
 	}
-	handler := handlers.NewProfessionalProfileHandler(mockService)
+	handler := controller.NewProfessionalProfileHandler(mockService)
 	app.Post("/professional/profile", func(c *fiber.Ctx) error {
 		c.Locals("user_id", uint(1))
 		return handler.CreateProfile(c)
@@ -229,7 +229,7 @@ func TestGetByUserID_NotFound(t *testing.T) {
 			return nil, errors.New("profile not found")
 		},
 	}
-	handler := handlers.NewProfessionalProfileHandler(mockService)
+	handler := controller.NewProfessionalProfileHandler(mockService)
 	app.Get("/professional/profile/user/:user_id", handler.GetByUserID)
 
 	req := httptest.NewRequest("GET", "/professional/profile/user/9999", nil)
@@ -247,7 +247,7 @@ func TestGetByProfessionalID_NotFound(t *testing.T) {
 			return nil, errors.New("profile not found")
 		},
 	}
-	handler := handlers.NewProfessionalProfileHandler(mockService)
+	handler := controller.NewProfessionalProfileHandler(mockService)
 	app.Get("/professional/profile/:id", handler.GetByProfessionalID)
 
 	req := httptest.NewRequest("GET", "/professional/profile/999", nil)
@@ -268,7 +268,7 @@ func TestEditProfile_Forbidden(t *testing.T) {
 			return &models.ProfessionalProfile{Model: gorm.Model{ID: profileID}, Bio: "BioAtualizada"}, nil
 		},
 	}
-	handler := handlers.NewProfessionalProfileHandler(mockService)
+	handler := controller.NewProfessionalProfileHandler(mockService)
 	app.Put("/professional/profile/:id", func(c *fiber.Ctx) error {
 		c.Locals("user_id", uint(2))
 		return handler.EditProfile(c)
@@ -291,7 +291,7 @@ func TestEditProfile_BadRequest(t *testing.T) {
 			return &models.ProfessionalProfile{Model: gorm.Model{ID: profileID}, Bio: "BioAtualizada"}, nil
 		},
 	}
-	handler := handlers.NewProfessionalProfileHandler(mockService)
+	handler := controller.NewProfessionalProfileHandler(mockService)
 	app.Put("/professional/profile/:id", func(c *fiber.Ctx) error {
 		c.Locals("user_id", uint(2))
 		return handler.EditProfile(c)
@@ -314,7 +314,7 @@ func TestEditProfile_BadJson(t *testing.T) {
 			return &models.ProfessionalProfile{Model: gorm.Model{ID: profileID}, Bio: "BioAtualizada"}, nil
 		},
 	}
-	handler := handlers.NewProfessionalProfileHandler(mockService)
+	handler := controller.NewProfessionalProfileHandler(mockService)
 	app.Put("/professional/profile/:id", func(c *fiber.Ctx) error {
 		c.Locals("user_id", uint(1))
 		return handler.EditProfile(c)
@@ -334,7 +334,7 @@ func TestDeleteProfile_Forbidden(t *testing.T) {
 			return errors.New("unauthorized: not the profile owner")
 		},
 	}
-	handler := handlers.NewProfessionalProfileHandler(mockService)
+	handler := controller.NewProfessionalProfileHandler(mockService)
 	app.Delete("/professional/profile/:id", func(c *fiber.Ctx) error {
 		c.Locals("user_id", uint(2))
 		return handler.DeleteProfile(c)
@@ -352,7 +352,7 @@ func TestDeleteProfile_BadRequest(t *testing.T) {
 			return errors.New("delete error")
 		},
 	}
-	handler := handlers.NewProfessionalProfileHandler(mockService)
+	handler := controller.NewProfessionalProfileHandler(mockService)
 	app.Delete("/professional/profile/:id", func(c *fiber.Ctx) error {
 		c.Locals("user_id", uint(1))
 		return handler.DeleteProfile(c)

@@ -3,6 +3,8 @@ definitions:
     properties:
       token:
         type: string
+      user:
+        $ref: '#/definitions/models.UserResponse'
     type: object
   models.ProfessionalProfile:
     type: object
@@ -55,9 +57,6 @@ definitions:
     type: object
 info:
   contact: {}
-  description: Documentação da API vittaAqui
-  title: vittaAqui API
-  version: "1.0"
 paths:
   /auth/login:
     post:
@@ -470,9 +469,4 @@ paths:
       summary: Atualizar usuário autenticado
       tags:
       - user
-securityDefinitions:
-  BearerAuth:
-    in: header
-    name: Authorization
-    type: apiKey
 swagger: "2.0"

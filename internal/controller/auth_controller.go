@@ -1,4 +1,4 @@
-package handlers
+package controller
 
 import (
 	"time"
@@ -85,5 +85,5 @@ func (h *UserHandler) Login(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "could not login"})
 	}
-	return c.JSON(models.LoginResponse{Token: t})
+	return c.JSON(models.LoginResponse{Token: t, User: models.UserResponse{ID: user.ID, Name: user.Name, Email: user.Email, Role: string(user.Role)}})
 }

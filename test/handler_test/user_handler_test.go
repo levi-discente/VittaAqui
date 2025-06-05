@@ -4,7 +4,7 @@ import (
 	"net/http/httptest"
 	"testing"
 	"vittaAqui/internal/config"
-	"vittaAqui/internal/handlers"
+	"vittaAqui/internal/controller"
 	"vittaAqui/internal/models"
 	"vittaAqui/internal/services"
 
@@ -36,7 +36,7 @@ func TestGetMeHandler(t *testing.T) {
 	}
 
 	testCfg := config.Config{JWTSecret: "secret-for-tests"}
-	handler := handlers.NewUserHandler(mockService, testCfg)
+	handler := controller.NewUserHandler(mockService, testCfg)
 	app.Get("/user/me", func(c *fiber.Ctx) error {
 		c.Locals("user_id", uint(123))
 		return handler.GetMe(c)
@@ -55,7 +55,7 @@ func TestGetMeHandler_NotFound(t *testing.T) {
 		},
 	}
 	testCfg := config.Config{JWTSecret: "secret-for-tests"}
-	handler := handlers.NewUserHandler(mockService, testCfg)
+	handler := controller.NewUserHandler(mockService, testCfg)
 	app.Get("/user/me", func(c *fiber.Ctx) error {
 		c.Locals("user_id", uint(123))
 		return handler.GetMe(c)
@@ -74,7 +74,7 @@ func TestGetMeHandler_Unauthorized(t *testing.T) {
 		},
 	}
 	testCfg := config.Config{JWTSecret: "secret-for-tests"}
-	handler := handlers.NewUserHandler(mockService, testCfg)
+	handler := controller.NewUserHandler(mockService, testCfg)
 	app.Get("/user/me", handler.GetMe)
 
 	req := httptest.NewRequest("GET", "/user/me", nil) // no user_id set
