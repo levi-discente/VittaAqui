@@ -29,14 +29,16 @@ func NewUserHandler(service services.UserServiceInterface, cfg config.Config) *U
 // @Failure      404  {object}  map[string]interface{}
 // @Router       /user/me [get]
 func (h *UserHandler) GetMe(c *fiber.Ctx) error {
-	uid, err := parseUserID(c)
-	if err != nil {
-		return err
+	uid, ok := c.Locals("user_id").(uint)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
 	}
+
 	user, err := h.service.GetByID(uid)
-	if err != nil {
+	if err != nil || user == nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "user not found"})
 	}
+
 	return c.JSON(user.ToUserResponse())
 }
 
