@@ -1,8 +1,10 @@
 package controller
 
 import (
+	"errors"
 	"time"
 	"vittaAqui/internal/models"
+	"vittaAqui/internal/services"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
@@ -29,9 +31,15 @@ func (h *UserHandler) Register(c *fiber.Ctx) error {
 	email := c.FormValue("email")
 	password := c.FormValue("password")
 	role := c.FormValue("role")
+	cpf := c.FormValue("cpf")
+	phone := c.FormValue("phone")
+	cep := c.FormValue("cep")
+	uf := c.FormValue("uf")
+	city := c.FormValue("city")
+	address := c.FormValue("address")
 
-	if name == "" || email == "" || password == "" || role == "" {
-		return c.Status(400).JSON(fiber.Map{"error": "missing required fields"})
+	if name == "" || email == "" || password == "" || role == "" || cpf == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "missing required fields"})
 	}
 
 	req := models.UserRegisterRequest{
@@ -39,14 +47,28 @@ func (h *UserHandler) Register(c *fiber.Ctx) error {
 		Email:    email,
 		Password: password,
 		Role:     role,
+		CPF:      cpf,
+		Phone:    phone,
+		CEP:      cep,
+		UF:       uf,
+		City:     city,
+		Address:  address,
 	}
 
 	bio := c.FormValue("bio")
 	category := c.FormValue("category")
 
 	if err := h.service.Register(&req, bio, category); err != nil {
+
+		if errors.Is(err, services.ErrCPFAlreadyExists) ||
+			errors.Is(err, services.ErrEmailAlreadyExists) ||
+			errors.Is(err, services.ErrInvalidCPF) {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		}
+
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
+
 	return c.JSON(fiber.Map{"message": "registered"})
 }
 
@@ -75,10 +97,8 @@ func (h *UserHandler) Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid credentials"})
 	}
 	claims := jwt.MapClaims{
-		"id":    user.ID,
-		"email": user.Email,
-		"role":  user.Role,
-		"exp":   time.Now().Add(time.Hour * 24).Unix(),
+		"user": user.ToUserResponse(),
+		"exp":  time.Now().Add(time.Hour * 24).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	t, err := token.SignedString([]byte(h.cfg.JWTSecret))

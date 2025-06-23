@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -21,14 +22,16 @@ import (
 )
 
 func main() {
+	cmd := exec.Command("go", "test", "./test/")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
-	testCode := exec.Command("go", "test", "./...")
-	err := testCode.Run()
+	log.Println("Running tests...")
+	err := cmd.Run()
 	if err != nil {
-		log.Fatal(err)
-	} else {
-
+		log.Fatalf("Tests failed: %v", err)
 	}
+	log.Println("Tests passed ✅")
 
 	swaggerInit := exec.Command("/home/levirenato/go/bin/swag", "init")
 
@@ -43,6 +46,7 @@ func main() {
 	}
 	cfg := config.LoadConfig()
 	db := utils.ConnectDatabase(cfg)
+	fmt.Println("Database migrated and connected")
 
 	professionalRepo := repositories.NewProfessionalProfileRepository(db)
 	professionalService := services.NewProfessionalProfileService(professionalRepo)

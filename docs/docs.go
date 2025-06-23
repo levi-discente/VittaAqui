@@ -434,17 +434,14 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Retorna todos os usuários cadastrados (acesso restrito)",
-                "consumes": [
-                    "application/json"
-                ],
+                "description": "Retorna a lista de todos os usuários cadastrados (admin futuramente)",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "user"
                 ],
-                "summary": "Listar todos os usuários (admin)",
+                "summary": "Listar todos os usuários",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -461,6 +458,13 @@ const docTemplate = `{
                             "type": "object",
                             "additionalProperties": true
                         }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
                     }
                 }
             }
@@ -473,9 +477,6 @@ const docTemplate = `{
                     }
                 ],
                 "description": "Retorna dados do próprio usuário (me)",
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -496,6 +497,13 @@ const docTemplate = `{
                             "type": "object",
                             "additionalProperties": true
                         }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
                     }
                 }
             },
@@ -505,7 +513,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Atualiza dados do próprio usuário",
+                "description": "Permite atualizar informações pessoais do próprio usuário",
                 "consumes": [
                     "application/json"
                 ],
@@ -515,10 +523,10 @@ const docTemplate = `{
                 "tags": [
                     "user"
                 ],
-                "summary": "Atualizar usuário autenticado",
+                "summary": "Atualizar dados do próprio usuário",
                 "parameters": [
                     {
-                        "description": "Novos dados",
+                        "description": "Novos dados do usuário",
                         "name": "user",
                         "in": "body",
                         "required": true,
@@ -547,6 +555,13 @@ const docTemplate = `{
                             "type": "object",
                             "additionalProperties": true
                         }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
                     }
                 }
             },
@@ -556,10 +571,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Remove o próprio usuário autenticado",
-                "consumes": [
-                    "application/json"
-                ],
+                "description": "Remove o próprio usuário autenticado do sistema",
                 "produces": [
                     "application/json"
                 ],
@@ -599,17 +611,14 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Retorna dados de um usuário específico (acesso restrito)",
-                "consumes": [
-                    "application/json"
-                ],
+                "description": "Retorna dados de um usuário específico (próprio usuário ou admin futuramente)",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "user"
                 ],
-                "summary": "Buscar usuário por ID (admin)",
+                "summary": "Buscar usuário por ID",
                 "parameters": [
                     {
                         "type": "integer",
@@ -626,8 +635,22 @@ const docTemplate = `{
                             "$ref": "#/definitions/models.UserResponse"
                         }
                     },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -683,6 +706,9 @@ const docTemplate = `{
                 "price": {
                     "type": "number"
                 },
+                "profissional_identification": {
+                    "type": "string"
+                },
                 "rating": {
                     "type": "number"
                 },
@@ -703,6 +729,18 @@ const docTemplate = `{
         "models.UserResponse": {
             "type": "object",
             "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "cep": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "cpf": {
+                    "type": "string"
+                },
                 "email": {
                     "type": "string"
                 },
@@ -712,7 +750,13 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "phone": {
+                    "type": "string"
+                },
                 "role": {
+                    "type": "string"
+                },
+                "uf": {
                     "type": "string"
                 }
             }
@@ -720,13 +764,31 @@ const docTemplate = `{
         "models.UserUpdateRequest": {
             "type": "object",
             "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "cep": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "cpf": {
+                    "type": "string"
+                },
                 "email": {
                     "type": "string"
                 },
                 "name": {
                     "type": "string"
                 },
+                "phone": {
+                    "type": "string"
+                },
                 "role": {
+                    "type": "string"
+                },
+                "uf": {
                     "type": "string"
                 }
             }

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"vittaAqui/internal/models"
 	"vittaAqui/internal/repositories"
+	"vittaAqui/internal/utils"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -27,23 +28,47 @@ func NewUserService(repo *repositories.UserRepository, profProfileService *Profe
 }
 
 func (s *UserService) Register(req *models.UserRegisterRequest, bio, category string) error {
+	if !utils.IsValidCPF(req.CPF) {
+		return ErrInvalidCPF
+	}
+
+	existingByCPF, _ := s.repo.FindByCPF(req.CPF)
+	if existingByCPF != nil {
+		return ErrCPFAlreadyExists
+	}
+
+	existingByEmail, _ := s.repo.FindByEmail(req.Email)
+	if existingByEmail != nil {
+		return ErrEmailAlreadyExists
+	}
+
 	hashed, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
+
 	role, err := models.ParseRole(req.Role)
 	if err != nil {
 		return err
 	}
+
 	user := &models.User{
 		Name:     req.Name,
 		Email:    req.Email,
 		Password: string(hashed),
 		Role:     role,
+		CPF:      req.CPF,
+		Phone:    req.Phone,
+		CEP:      req.CEP,
+		UF:       req.UF,
+		City:     req.City,
+		Address:  req.Address,
 	}
+
 	if err := s.repo.Create(user); err != nil {
 		return err
 	}
+
 	if role == models.RoleProfessional {
 		profile := &models.ProfessionalProfile{
 			UserID:   user.ID,
@@ -52,6 +77,7 @@ func (s *UserService) Register(req *models.UserRegisterRequest, bio, category st
 		}
 		_ = s.profProfileService.CreateProfile(user.ID, profile)
 	}
+
 	return nil
 }
 
@@ -75,9 +101,18 @@ func (s *UserService) UpdateProfile(id uint, req *models.UserUpdateRequest) (*mo
 	if err != nil {
 		return nil, err
 	}
+
 	user.Name = req.Name
 	user.Email = req.Email
 	user.Role = models.Role(req.Role)
+
+	user.CPF = req.CPF
+	user.Phone = req.Phone
+	user.CEP = req.CEP
+	user.UF = req.UF
+	user.City = req.City
+	user.Address = req.Address
+
 	err = s.repo.Update(user)
 	return user, err
 }

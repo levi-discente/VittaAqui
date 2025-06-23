@@ -16,6 +16,7 @@ const (
 	CategoryPhysiotherapist     ProfessionalCategory = "physiotherapist"
 	CategoryOccupationalTherapy ProfessionalCategory = "occupational_therapy"
 	CategoryElderlyCare         ProfessionalCategory = "elderly_care"
+	CategoryDoctor              ProfessionalCategory = "doctor"
 )
 
 type ProfileTag struct {
@@ -36,30 +37,32 @@ type ProfessionalRating struct {
 
 type ProfessionalProfile struct {
 	gorm.Model
-	UserID         uint `gorm:"uniqueIndex"`
-	Bio            string
-	Category       ProfessionalCategory
-	Services       string
-	Price          float64
-	Tags           []ProfileTag `gorm:"foreignKey:ProfileID"`
-	OnlyOnline     bool
-	OnlyPresential bool
-	Rating         float64
-	NumReviews     uint
+	UserID                     uint `gorm:"uniqueIndex"`
+	Bio                        string
+	Category                   ProfessionalCategory
+	ProfissionalIdentification string `gorm:"uniqueIndex"`
+	Services                   string
+	Price                      float64
+	Tags                       []ProfileTag `gorm:"foreignKey:ProfileID"`
+	OnlyOnline                 bool
+	OnlyPresential             bool
+	Rating                     float64
+	NumReviews                 uint
 }
 
 type ProfessionalProfileResponse struct {
-	ID             uint     `json:"id"`
-	UserID         uint     `json:"user_id"`
-	Bio            string   `json:"bio"`
-	Category       string   `json:"category"`
-	Services       string   `json:"services"`
-	Price          float64  `json:"price"`
-	Tags           []string `json:"tags"`
-	OnlyOnline     bool     `json:"only_online"`
-	OnlyPresential bool     `json:"only_presential"`
-	Rating         float64  `json:"rating"`
-	NumReviews     uint     `json:"num_reviews"`
+	ID                         uint     `json:"id"`
+	UserID                     uint     `json:"user_id"`
+	Bio                        string   `json:"bio"`
+	Category                   string   `json:"category"`
+	ProfissionalIdentification string   `json:"profissional_identification"`
+	Services                   string   `json:"services"`
+	Price                      float64  `json:"price"`
+	Tags                       []string `json:"tags"`
+	OnlyOnline                 bool     `json:"only_online"`
+	OnlyPresential             bool     `json:"only_presential"`
+	Rating                     float64  `json:"rating"`
+	NumReviews                 uint     `json:"num_reviews"`
 }
 
 func ToProfessionalProfileResponse(profile *ProfessionalProfile) ProfessionalProfileResponse {
@@ -68,16 +71,17 @@ func ToProfessionalProfileResponse(profile *ProfessionalProfile) ProfessionalPro
 		tags[i] = tag.Name
 	}
 	return ProfessionalProfileResponse{
-		ID:             profile.ID,
-		UserID:         profile.UserID,
-		Bio:            profile.Bio,
-		Category:       string(profile.Category),
-		Services:       profile.Services,
-		Price:          profile.Price,
-		Tags:           tags,
-		OnlyOnline:     profile.OnlyOnline,
-		OnlyPresential: profile.OnlyPresential,
-		Rating:         profile.Rating,
-		NumReviews:     profile.NumReviews,
+		ID:                         profile.ID,
+		UserID:                     profile.UserID,
+		Bio:                        profile.Bio,
+		Category:                   string(profile.Category),
+		ProfissionalIdentification: profile.ProfissionalIdentification,
+		Services:                   profile.Services,
+		Price:                      profile.Price,
+		Tags:                       tags,
+		OnlyOnline:                 profile.OnlyOnline,
+		OnlyPresential:             profile.OnlyPresential,
+		Rating:                     profile.Rating,
+		NumReviews:                 profile.NumReviews,
 	}
 }

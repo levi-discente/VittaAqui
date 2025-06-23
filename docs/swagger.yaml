@@ -24,6 +24,8 @@ definitions:
         type: boolean
       price:
         type: number
+      profissional_identification:
+        type: string
       rating:
         type: number
       services:
@@ -37,22 +39,46 @@ definitions:
     type: object
   models.UserResponse:
     properties:
+      address:
+        type: string
+      cep:
+        type: string
+      city:
+        type: string
+      cpf:
+        type: string
       email:
         type: string
       id:
         type: integer
       name:
         type: string
+      phone:
+        type: string
       role:
+        type: string
+      uf:
         type: string
     type: object
   models.UserUpdateRequest:
     properties:
+      address:
+        type: string
+      cep:
+        type: string
+      city:
+        type: string
+      cpf:
+        type: string
       email:
         type: string
       name:
         type: string
+      phone:
+        type: string
       role:
+        type: string
+      uf:
         type: string
     type: object
 info:
@@ -332,9 +358,7 @@ paths:
       - professional
   /user:
     get:
-      consumes:
-      - application/json
-      description: Retorna todos os usuários cadastrados (acesso restrito)
+      description: Retorna a lista de todos os usuários cadastrados (admin futuramente)
       produces:
       - application/json
       responses:
@@ -349,16 +373,20 @@ paths:
           schema:
             additionalProperties: true
             type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
       security:
       - BearerAuth: []
-      summary: Listar todos os usuários (admin)
+      summary: Listar todos os usuários
       tags:
       - user
   /user/{id}:
     get:
-      consumes:
-      - application/json
-      description: Retorna dados de um usuário específico (acesso restrito)
+      description: Retorna dados de um usuário específico (próprio usuário ou admin
+        futuramente)
       parameters:
       - description: ID do usuário
         in: path
@@ -372,8 +400,18 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/models.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
         "401":
           description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
           schema:
             additionalProperties: true
             type: object
@@ -384,14 +422,12 @@ paths:
             type: object
       security:
       - BearerAuth: []
-      summary: Buscar usuário por ID (admin)
+      summary: Buscar usuário por ID
       tags:
       - user
   /user/me:
     delete:
-      consumes:
-      - application/json
-      description: Remove o próprio usuário autenticado
+      description: Remove o próprio usuário autenticado do sistema
       produces:
       - application/json
       responses:
@@ -416,8 +452,6 @@ paths:
       tags:
       - user
     get:
-      consumes:
-      - application/json
       description: Retorna dados do próprio usuário (me)
       produces:
       - application/json
@@ -431,6 +465,11 @@ paths:
           schema:
             additionalProperties: true
             type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
       security:
       - BearerAuth: []
       summary: Pegar informações do usuário autenticado
@@ -439,9 +478,9 @@ paths:
     put:
       consumes:
       - application/json
-      description: Atualiza dados do próprio usuário
+      description: Permite atualizar informações pessoais do próprio usuário
       parameters:
-      - description: Novos dados
+      - description: Novos dados do usuário
         in: body
         name: user
         required: true
@@ -464,9 +503,14 @@ paths:
           schema:
             additionalProperties: true
             type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
       security:
       - BearerAuth: []
-      summary: Atualizar usuário autenticado
+      summary: Atualizar dados do próprio usuário
       tags:
       - user
 swagger: "2.0"
