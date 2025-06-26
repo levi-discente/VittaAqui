@@ -3,8 +3,9 @@ package controller
 import (
 	"errors"
 	"time"
-	"vittaAqui/internal/models"
-	"vittaAqui/internal/services"
+
+	"github.com/levirenato/VittaAqui/internal/models"
+	"github.com/levirenato/VittaAqui/internal/services"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"

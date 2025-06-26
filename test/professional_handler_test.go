@@ -6,9 +6,10 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-	"vittaAqui/internal/controller"
-	"vittaAqui/internal/models"
-	"vittaAqui/internal/services"
+
+	"github.com/levirenato/VittaAqui/internal/controller"
+	"github.com/levirenato/VittaAqui/internal/models"
+	"github.com/levirenato/VittaAqui/internal/services"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"

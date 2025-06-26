@@ -4,8 +4,9 @@ import (
 	"errors"
 	"strconv"
 	"strings"
-	"vittaAqui/internal/models"
-	"vittaAqui/internal/services"
+
+	"github.com/levirenato/VittaAqui/internal/models"
+	"github.com/levirenato/VittaAqui/internal/services"
 
 	"github.com/gofiber/fiber/v2"
 )

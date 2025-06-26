@@ -1,19 +1,21 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"os/exec"
 	"os/signal"
 	"syscall"
-	_ "vittaAqui/docs"
-	"vittaAqui/internal/config"
-	"vittaAqui/internal/controller"
-	"vittaAqui/internal/middlewares"
-	"vittaAqui/internal/repositories"
-	"vittaAqui/internal/services"
-	"vittaAqui/internal/utils"
+
+	"github.com/levirenato/VittaAqui/internal/repositories"
+	"github.com/levirenato/VittaAqui/internal/services"
+	"github.com/levirenato/VittaAqui/internal/utils"
+
+	"github.com/levirenato/VittaAqui/internal/controller"
+	"github.com/levirenato/VittaAqui/internal/middlewares"
+
+	_ "github.com/levirenato/VittaAqui/docs"
+	"github.com/levirenato/VittaAqui/internal/config"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -26,27 +28,32 @@ func main() {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	log.Println("Running tests...")
+	log.Println("[INFO] Running tests...")
 	err := cmd.Run()
 	if err != nil {
-		log.Fatalf("Tests failed: %v", err)
+		log.Fatalf("[ERR] Tests failed: %v", err)
 	}
-	log.Println("Tests passed ✅")
+	log.Println("[INFO] All Tests passed ✅")
 
-	swaggerInit := exec.Command("/home/levirenato/go/bin/swag", "init")
+	swaggerInit := exec.Command(
+		"/home/levirenato/go/bin/swag",
+		"init",
+		"-g", "cmd/main.go",
+		"-o", "docs",
+	)
 
+	log.Println("[INFO] Generating Swagger docs…")
 	if err := swaggerInit.Run(); err != nil {
-		log.Fatal(err)
-	} else {
-		log.Println("swagger init success")
+		log.Fatalf("[ERR] Error initializing swagger: %v", err)
 	}
 
+	log.Println("[INFO] Loading environment variables…")
 	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found, reading environment variables directly.")
+		log.Println("[ERR] No .env file found, reading environment variables directly.")
 	}
 	cfg := config.LoadConfig()
 	db := utils.ConnectDatabase(cfg)
-	fmt.Println("Database migrated and connected")
+	log.Println("[INFO] Database migrated and connected")
 
 	professionalRepo := repositories.NewProfessionalProfileRepository(db)
 	professionalService := services.NewProfessionalProfileService(professionalRepo)
@@ -95,13 +102,13 @@ func main() {
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		if err := srv; err != nil {
-			log.Fatalf("Fiber server error: %v", err)
+			log.Fatalf("[ERR] Fiber server error: %v", err)
 		}
 	}()
 	<-c
-	log.Println("Gracefully shutting down...")
+	log.Println("[INFO] Gracefully shutting down...")
 	if err := app.Shutdown(); err != nil {
-		log.Fatalf("Error during shutdown: %v", err)
+		log.Fatalf("[ERR] Error during shutdown: %v", err)
 	}
-	log.Println("Server stopped")
+	log.Println("[INFO] Server stopped")
 }

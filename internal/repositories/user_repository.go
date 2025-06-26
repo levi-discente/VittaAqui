@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"vittaAqui/internal/models"
+	"github.com/levirenato/VittaAqui/internal/models"
 
 	"gorm.io/gorm"
 )

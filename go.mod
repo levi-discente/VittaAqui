@@ -1,4 +1,4 @@
-module vittaAqui
+module github.com/levirenato/VittaAqui
 
 go 1.23.4
 

@@ -2,8 +2,9 @@ package services
 
 import (
 	"errors"
-	"vittaAqui/internal/models"
-	"vittaAqui/internal/repositories"
+
+	"github.com/levirenato/VittaAqui/internal/models"
+	"github.com/levirenato/VittaAqui/internal/repositories"
 )
 
 type ProfessionalProfileService struct {

@@ -2,8 +2,9 @@ package utils
 
 import (
 	"log"
-	"vittaAqui/internal/config"
-	"vittaAqui/internal/models"
+
+	"github.com/levirenato/VittaAqui/internal/config"
+	"github.com/levirenato/VittaAqui/internal/models"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

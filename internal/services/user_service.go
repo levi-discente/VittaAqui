@@ -2,9 +2,10 @@ package services
 
 import (
 	"errors"
-	"vittaAqui/internal/models"
-	"vittaAqui/internal/repositories"
-	"vittaAqui/internal/utils"
+
+	"github.com/levirenato/VittaAqui/internal/models"
+	"github.com/levirenato/VittaAqui/internal/repositories"
+	"github.com/levirenato/VittaAqui/internal/utils"
 
 	"golang.org/x/crypto/bcrypt"
 )
