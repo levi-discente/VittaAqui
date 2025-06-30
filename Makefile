@@ -1,10 +1,10 @@
 # Makefile
 
 # Binário de produção
-BINARY=bin/server
+BINARY=./build/server
 
 # Diretórios
-CMD_DIR=cmd/
+CMD_DIR=cmd/main.go
 PKG=./...
 
 GOBIN ?= $(shell go env GOBIN)
