@@ -45,6 +45,10 @@ clean:
 
 
 ## docker    Builda imagens Docker em modo produção
-docker:
+docker-up:
 	@echo "🐳 Building Docker image"
-	docker-compose build
+	docker compose up -d
+
+docker-down:
+	@echo "🐳 Removing Docker image"
+	docker compose down

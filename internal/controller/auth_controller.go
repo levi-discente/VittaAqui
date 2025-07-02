@@ -17,12 +17,18 @@ import (
 // @Tags         auth
 // @Accept       x-www-form-urlencoded
 // @Produce      json
-// @Param        name     formData string true "Nome"
-// @Param        email    formData string true "Email"
-// @Param        password formData string true "Senha"
-// @Param        role     formData string true "Role (patient/professional)"
-// @Param        bio      formData string false "Bio do profissional (se profissional)"
-// @Param        category formData string false "Categoria profissional (se profissional)"
+// @Param        name     formData string  true  "Nome"
+// @Param        email    formData string  true  "Email"
+// @Param        password formData string  true  "Senha"
+// @Param        role     formData string  true  "Role (patient/professional)"  Enums(patient,professional)
+// @Param        cpf      formData string  true  "CPF"
+// @Param        phone    formData string  false "Telefone"
+// @Param        cep      formData string  false "CEP"
+// @Param        uf       formData string  false "UF"
+// @Param        city     formData string  false "Cidade"
+// @Param        address  formData string  false "Endereço"
+// @Param        bio      formData string  false "Bio do profissional (se profissional)"
+// @Param        category formData string  false "Categoria profissional (se profissional)"
 // @Success      200   {object}  map[string]interface{}
 // @Failure      400   {object}  map[string]interface{}
 // @Failure      500   {object}  map[string]interface{}
@@ -61,8 +67,8 @@ func (h *UserHandler) Register(c *fiber.Ctx) error {
 
 	if err := h.service.Register(&req, bio, category); err != nil {
 
-		if errors.Is(err, services.ErrCPFAlreadyExists) ||
-			errors.Is(err, services.ErrEmailAlreadyExists) ||
+		if errors.Is(err, services.ErrEmailAlreadyExists) ||
+			errors.Is(err, services.ErrCPFAlreadyExists) ||
 			errors.Is(err, services.ErrInvalidCPF) {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 		}

@@ -142,9 +142,37 @@ paths:
         required: true
         type: string
       - description: Role (patient/professional)
+        enum:
+        - patient
+        - professional
         in: formData
         name: role
         required: true
+        type: string
+      - description: CPF
+        in: formData
+        name: cpf
+        required: true
+        type: string
+      - description: Telefone
+        in: formData
+        name: phone
+        type: string
+      - description: CEP
+        in: formData
+        name: cep
+        type: string
+      - description: UF
+        in: formData
+        name: uf
+        type: string
+      - description: Cidade
+        in: formData
+        name: city
+        type: string
+      - description: Endereço
+        in: formData
+        name: address
         type: string
       - description: Bio do profissional (se profissional)
         in: formData

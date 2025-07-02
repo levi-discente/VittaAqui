@@ -33,14 +33,14 @@ func (s *UserService) Register(req *models.UserRegisterRequest, bio, category st
 		return ErrInvalidCPF
 	}
 
-	existingByCPF, _ := s.repo.FindByCPF(req.CPF)
-	if existingByCPF != nil {
-		return ErrCPFAlreadyExists
-	}
-
 	existingByEmail, _ := s.repo.FindByEmail(req.Email)
 	if existingByEmail != nil {
 		return ErrEmailAlreadyExists
+	}
+
+	existingByCPF, _ := s.repo.FindByCPF(req.CPF)
+	if existingByCPF != nil {
+		return ErrCPFAlreadyExists
 	}
 
 	hashed, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)

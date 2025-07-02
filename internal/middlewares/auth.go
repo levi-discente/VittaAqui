@@ -1,9 +1,11 @@
+// Package middlewares for auth
 package middlewares
 
 import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/log"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -50,6 +52,7 @@ func RequireAuth(secret string) fiber.Handler {
 			c.Locals("role", role)
 		}
 
+		log.Debug("auth middleware initialized")
 		return c.Next()
 	}
 }

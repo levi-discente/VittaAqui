@@ -104,11 +104,52 @@ const docTemplate = `{
                         "required": true
                     },
                     {
+                        "enum": [
+                            "patient",
+                            "professional"
+                        ],
                         "type": "string",
                         "description": "Role (patient/professional)",
                         "name": "role",
                         "in": "formData",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "CPF",
+                        "name": "cpf",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Telefone",
+                        "name": "phone",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "CEP",
+                        "name": "cep",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "UF",
+                        "name": "uf",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Cidade",
+                        "name": "city",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Endereço",
+                        "name": "address",
+                        "in": "formData"
                     },
                     {
                         "type": "string",
