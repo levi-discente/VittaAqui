@@ -16,7 +16,7 @@ type UserService struct {
 }
 
 type UserServiceInterface interface {
-	Register(req *models.UserRegisterRequest, bio, category string) error
+	Register(req *models.UserRegisterRequest, ProfissionalIdentification string, category string) error
 	Login(email, password string) (*models.User, error)
 	GetByID(id uint) (*models.User, error)
 	UpdateProfile(id uint, req *models.UserUpdateRequest) (*models.User, error)
@@ -28,7 +28,7 @@ func NewUserService(repo *repositories.UserRepository, profProfileService *Profe
 	return &UserService{repo, profProfileService}
 }
 
-func (s *UserService) Register(req *models.UserRegisterRequest, bio, category string) error {
+func (s *UserService) Register(req *models.UserRegisterRequest, ProfissionalIdentification string, category string) error {
 	if !utils.IsValidCPF(req.CPF) {
 		return ErrInvalidCPF
 	}
@@ -72,9 +72,9 @@ func (s *UserService) Register(req *models.UserRegisterRequest, bio, category st
 
 	if role == models.RoleProfessional {
 		profile := &models.ProfessionalProfile{
-			UserID:   user.ID,
-			Bio:      bio,
-			Category: models.ProfessionalCategory(category),
+			UserID:                     user.ID,
+			ProfissionalIdentification: ProfissionalIdentification,
+			Category:                   models.ProfessionalCategory(category),
 		}
 		_ = s.profProfileService.CreateProfile(user.ID, profile)
 	}

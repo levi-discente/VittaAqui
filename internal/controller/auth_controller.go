@@ -27,8 +27,8 @@ import (
 // @Param        uf       formData string  false "UF"
 // @Param        city     formData string  false "Cidade"
 // @Param        address  formData string  false "Endereço"
-// @Param        bio      formData string  false "Bio do profissional (se profissional)"
-// @Param        category formData string  false "Categoria profissional (se profissional)"
+// @Param        credencial      formData string  false "credencial do profissional (se profissional)"
+// @Param        category formData string  false "Categoria profissional (se profissional)" Enums(nutritionist,personal_trainer,physician,psychologist,physiotherapist,occupational_therapy,elderly_care,doctor)
 // @Success      200   {object}  map[string]interface{}
 // @Failure      400   {object}  map[string]interface{}
 // @Failure      500   {object}  map[string]interface{}
@@ -62,10 +62,10 @@ func (h *UserHandler) Register(c *fiber.Ctx) error {
 		Address:  address,
 	}
 
-	bio := c.FormValue("bio")
+	ProfissionalIdentification := c.FormValue("profissional_identification")
 	category := c.FormValue("category")
 
-	if err := h.service.Register(&req, bio, category); err != nil {
+	if err := h.service.Register(&req, ProfissionalIdentification, category); err != nil {
 
 		if errors.Is(err, services.ErrEmailAlreadyExists) ||
 			errors.Is(err, services.ErrCPFAlreadyExists) ||

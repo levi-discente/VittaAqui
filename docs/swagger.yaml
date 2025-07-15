@@ -174,11 +174,20 @@ paths:
         in: formData
         name: address
         type: string
-      - description: Bio do profissional (se profissional)
+      - description: credencial do profissional (se profissional)
         in: formData
-        name: bio
+        name: credencial
         type: string
       - description: Categoria profissional (se profissional)
+        enum:
+        - nutritionist
+        - personal_trainer
+        - physician
+        - psychologist
+        - physiotherapist
+        - occupational_therapy
+        - elderly_care
+        - doctor
         in: formData
         name: category
         type: string

@@ -142,11 +142,21 @@
                     },
                     {
                         "type": "string",
-                        "description": "Bio do profissional (se profissional)",
-                        "name": "bio",
+                        "description": "credencial do profissional (se profissional)",
+                        "name": "credencial",
                         "in": "formData"
                     },
                     {
+                        "enum": [
+                            "nutritionist",
+                            "personal_trainer",
+                            "physician",
+                            "psychologist",
+                            "physiotherapist",
+                            "occupational_therapy",
+                            "elderly_care",
+                            "doctor"
+                        ],
                         "type": "string",
                         "description": "Categoria profissional (se profissional)",
                         "name": "category",

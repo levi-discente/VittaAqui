@@ -31,7 +31,7 @@ type User struct {
 	CreatedAt           time.Time            `json:"created_at"`
 	UpdatedAt           time.Time            `json:"updated_at"`
 	DeletedAt           gorm.DeletedAt       `gorm:"index" json:"-"`
-	ProfessionalProfile *ProfessionalProfile `gorm:"foreignKey:UserID" json:"professional_profile,omitempty"`
+	ProfessionalProfile *ProfessionalProfile `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"professional_profile,omitempty"`
 }
 
 type UserRegisterRequest struct {
