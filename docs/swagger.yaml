@@ -1,4 +1,32 @@
 definitions:
+  models.AppointmentResponse:
+    properties:
+      end_time:
+        type: string
+      id:
+        type: integer
+      patient_id:
+        type: integer
+      patient_name:
+        type: string
+      professional_id:
+        type: integer
+      professional_name:
+        type: string
+      start_time:
+        type: string
+      status:
+        type: string
+    type: object
+  models.CreateAppointmentRequest:
+    properties:
+      end_time:
+        type: string
+      professional_id:
+        type: integer
+      start_time:
+        type: string
+    type: object
   models.LoginResponse:
     properties:
       token:
@@ -12,6 +40,10 @@ definitions:
     properties:
       address:
         type: string
+      available_days_of_week:
+        items:
+          type: string
+        type: array
       bio:
         type: string
       category:
@@ -21,6 +53,8 @@ definitions:
       city:
         type: string
       email:
+        type: string
+      end_hour:
         type: string
       id:
         type: integer
@@ -40,15 +74,41 @@ definitions:
         type: number
       services:
         type: string
+      start_hour:
+        type: string
       tags:
         items:
           type: string
         type: array
       uf:
         type: string
+      unavailable_dates:
+        items:
+          $ref: '#/definitions/models.UnavailableDate'
+        type: array
       user_id:
         type: integer
       user_name:
+        type: string
+    type: object
+  models.UnavailableDate:
+    properties:
+      date:
+        type: string
+      id:
+        type: integer
+      profileID:
+        type: integer
+      reason:
+        type: string
+    type: object
+  models.UpdateAppointmentRequest:
+    properties:
+      end_time:
+        type: string
+      start_time:
+        type: string
+      status:
         type: string
     type: object
   models.UserResponse:
@@ -98,6 +158,138 @@ definitions:
 info:
   contact: {}
 paths:
+  /appointments:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados do agendamento
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateAppointmentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AppointmentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Cria um novo agendamento
+      tags:
+      - appointment
+  /appointments/{id}:
+    delete:
+      parameters:
+      - description: ID do agendamento
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Remove um agendamento
+      tags:
+      - appointment
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID do agendamento
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Novos dados do agendamento
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateAppointmentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AppointmentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Atualiza um agendamento
+      tags:
+      - appointment
+  /appointments/my:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.AppointmentResponse'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Lista agendamentos do paciente logado
+      tags:
+      - appointment
+  /appointments/professional/{id}:
+    get:
+      parameters:
+      - description: ID do profissional
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.AppointmentResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Lista agendamentos de um profissional
+      tags:
+      - appointment
   /auth/login:
     post:
       consumes:
@@ -266,7 +458,7 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Dados do perfil profissional
+      - description: Dados do perfil profissional (inclui dias e horários de atendimento)
         in: body
         name: data
         required: true
@@ -356,7 +548,7 @@ paths:
         name: id
         required: true
         type: integer
-      - description: Novos dados do perfil
+      - description: Novos dados do perfil (inclui dias e horários de atendimento)
         in: body
         name: data
         required: true

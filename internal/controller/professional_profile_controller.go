@@ -25,7 +25,7 @@ func NewProfessionalProfileHandler(service services.ProfessionalProfileServiceIn
 // @Security     BearerAuth
 // @Accept       json
 // @Produce      json
-// @Param        data body models.ProfessionalProfile true "Dados do perfil profissional"
+// @Param        data body models.ProfessionalProfile true "Dados do perfil profissional (inclui dias e horários de atendimento)"
 // @Success      200 {object} models.ProfessionalProfileResponse
 // @Failure      400 {object} map[string]interface{}
 // @Failure      401 {object} map[string]interface{}
@@ -42,7 +42,6 @@ func (h *ProfessionalProfileHandler) CreateProfile(c *fiber.Ctx) error {
 	if err := h.service.CreateProfile(userID, &data); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
-
 	resp := models.ToProfessionalProfileResponse(&data)
 	return c.JSON(resp)
 }
@@ -140,7 +139,7 @@ func (h *ProfessionalProfileHandler) ListProfessionals(c *fiber.Ctx) error {
 // @Accept       json
 // @Produce      json
 // @Param        id path int true "ID do perfil profissional"
-// @Param        data body models.ProfessionalProfile true "Novos dados do perfil"
+// @Param        data body models.ProfessionalProfile true "Novos dados do perfil (inclui dias e horários de atendimento)"
 // @Success      200 {object} models.ProfessionalProfileResponse
 // @Failure      400 {object} map[string]interface{}
 // @Failure      401 {object} map[string]interface{}

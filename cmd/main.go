@@ -63,6 +63,10 @@ func main() {
 	userService := services.NewUserService(userRepo, professionalService)
 	userHandler := controller.NewUserHandler(userService, cfg)
 
+	appointmentRepo := repositories.NewAppointmentRepository(db)
+	appointmentService := services.NewAppointmentService(appointmentRepo)
+	appointmentHandler := controller.NewAppointmentHandler(appointmentService)
+
 	app := fiber.New()
 
 	// 1) Habilita CORS para todas as rotas e todas as origens:
@@ -96,6 +100,14 @@ func main() {
 	prof.Get("/list", professionalHandler.ListProfessionals)
 	prof.Put("/profile/:id", middlewares.RequireAuth(cfg.JWTSecret), professionalHandler.EditProfile)
 	prof.Delete("/profile/:id", middlewares.RequireAuth(cfg.JWTSecret), professionalHandler.DeleteProfile)
+
+	// 6) Rotas de agendamentos
+	appointment := app.Group("/appointments")
+	appointment.Post("/", middlewares.RequireAuth(cfg.JWTSecret), appointmentHandler.CreateAppointment)
+	appointment.Get("/my", middlewares.RequireAuth(cfg.JWTSecret), appointmentHandler.GetMyAppointments)
+	appointment.Get("/professional/:id", appointmentHandler.GetProfessionalSchedule)
+	appointment.Delete("/:id", middlewares.RequireAuth(cfg.JWTSecret), appointmentHandler.DeleteAppointment)
+	appointment.Put("/:id", middlewares.RequireAuth(cfg.JWTSecret), appointmentHandler.UpdateAppointment)
 
 	srv := app.Listen(":8000")
 	c := make(chan os.Signal, 1)

@@ -9,3 +9,5 @@ var ErrEmailAlreadyExists = errors.New("email already registered")
 var ErrCPFAlreadyExists = errors.New("cpf already registered")
 
 var ErrInvalidCPF = errors.New("invalid CPF")
+
+var ErrUnauthorized = errors.New("unauthorized access")

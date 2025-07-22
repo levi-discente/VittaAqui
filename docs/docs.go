@@ -15,6 +15,214 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/appointments": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "appointment"
+                ],
+                "summary": "Cria um novo agendamento",
+                "parameters": [
+                    {
+                        "description": "Dados do agendamento",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateAppointmentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.AppointmentResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/appointments/my": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "appointment"
+                ],
+                "summary": "Lista agendamentos do paciente logado",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.AppointmentResponse"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/appointments/professional/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "appointment"
+                ],
+                "summary": "Lista agendamentos de um profissional",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID do profissional",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.AppointmentResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/appointments/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "appointment"
+                ],
+                "summary": "Atualiza um agendamento",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID do agendamento",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Novos dados do agendamento",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateAppointmentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.AppointmentResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "appointment"
+                ],
+                "summary": "Remove um agendamento",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID do agendamento",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "description": "Autentica o usuário e retorna o token JWT",
@@ -272,7 +480,7 @@ const docTemplate = `{
                 "summary": "Cria perfil profissional",
                 "parameters": [
                     {
-                        "description": "Dados do perfil profissional",
+                        "description": "Dados do perfil profissional (inclui dias e horários de atendimento)",
                         "name": "data",
                         "in": "body",
                         "required": true,
@@ -399,7 +607,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Novos dados do perfil",
+                        "description": "Novos dados do perfil (inclui dias e horários de atendimento)",
                         "name": "data",
                         "in": "body",
                         "required": true,
@@ -719,6 +927,49 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "models.AppointmentResponse": {
+            "type": "object",
+            "properties": {
+                "end_time": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "patient_id": {
+                    "type": "integer"
+                },
+                "patient_name": {
+                    "type": "string"
+                },
+                "professional_id": {
+                    "type": "integer"
+                },
+                "professional_name": {
+                    "type": "string"
+                },
+                "start_time": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.CreateAppointmentRequest": {
+            "type": "object",
+            "properties": {
+                "end_time": {
+                    "type": "string"
+                },
+                "professional_id": {
+                    "type": "integer"
+                },
+                "start_time": {
+                    "type": "string"
+                }
+            }
+        },
         "models.LoginResponse": {
             "type": "object",
             "properties": {
@@ -739,6 +990,12 @@ const docTemplate = `{
                 "address": {
                     "type": "string"
                 },
+                "available_days_of_week": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "bio": {
                     "type": "string"
                 },
@@ -752,6 +1009,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "email": {
+                    "type": "string"
+                },
+                "end_hour": {
                     "type": "string"
                 },
                 "id": {
@@ -781,6 +1041,9 @@ const docTemplate = `{
                 "services": {
                     "type": "string"
                 },
+                "start_hour": {
+                    "type": "string"
+                },
                 "tags": {
                     "type": "array",
                     "items": {
@@ -790,10 +1053,47 @@ const docTemplate = `{
                 "uf": {
                     "type": "string"
                 },
+                "unavailable_dates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.UnavailableDate"
+                    }
+                },
                 "user_id": {
                     "type": "integer"
                 },
                 "user_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UnavailableDate": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "profileID": {
+                    "type": "integer"
+                },
+                "reason": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UpdateAppointmentRequest": {
+            "type": "object",
+            "properties": {
+                "end_time": {
+                    "type": "string"
+                },
+                "start_time": {
+                    "type": "string"
+                },
+                "status": {
                     "type": "string"
                 }
             }

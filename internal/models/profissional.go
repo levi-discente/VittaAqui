@@ -1,12 +1,21 @@
 package models
 
 import (
+	"database/sql/driver"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
 )
 
 type ProfessionalCategory string
+
+type UnavailableDate struct {
+	ID        uint      `gorm:"primaryKey"`
+	ProfileID uint      `gorm:"index"`
+	Date      time.Time `json:"date"`
+	Reason    string    `json:"reason"`
+}
 
 const (
 	CategoryNutritionist        ProfessionalCategory = "nutritionist"
@@ -35,6 +44,23 @@ type ProfessionalRating struct {
 	updatedAt time.Time
 }
 
+type DaysOfWeek []string
+
+func (d DaysOfWeek) Value() (driver.Value, error) {
+	return strings.Join(d, ","), nil
+}
+
+func (d *DaysOfWeek) Scan(value interface{}) error {
+	if str, ok := value.(string); ok {
+		*d = strings.Split(str, ",")
+	} else if b, ok := value.([]byte); ok {
+		*d = strings.Split(string(b), ",")
+	} else {
+		*d = []string{}
+	}
+	return nil
+}
+
 type ProfessionalProfile struct {
 	gorm.Model
 	UserID                     uint `gorm:"uniqueIndex"`
@@ -49,6 +75,11 @@ type ProfessionalProfile struct {
 	OnlyPresential             bool
 	Rating                     float64
 	NumReviews                 uint
+
+	AvailableDaysOfWeek DaysOfWeek        `gorm:"type:text" json:"available_days_of_week"`
+	StartHour           string            `json:"start_hour"`
+	EndHour             string            `json:"end_hour"`
+	UnavailableDates    []UnavailableDate `gorm:"foreignKey:ProfileID"`
 }
 
 type ProfessionalProfileResponse struct {
@@ -71,6 +102,11 @@ type ProfessionalProfileResponse struct {
 	OnlyPresential             bool     `json:"only_presential"`
 	Rating                     float64  `json:"rating"`
 	NumReviews                 uint     `json:"num_reviews"`
+
+	AvailableDaysOfWeek DaysOfWeek        `json:"available_days_of_week"`
+	StartHour           string            `json:"start_hour"`
+	EndHour             string            `json:"end_hour"`
+	UnavailableDates    []UnavailableDate `json:"unavailable_dates" gorm:"foreignKey:ProfileID"`
 }
 
 func ToProfessionalProfileResponse(profile *ProfessionalProfile) ProfessionalProfileResponse {
@@ -98,5 +134,10 @@ func ToProfessionalProfileResponse(profile *ProfessionalProfile) ProfessionalPro
 		OnlyPresential:             profile.OnlyPresential,
 		Rating:                     profile.Rating,
 		NumReviews:                 profile.NumReviews,
+
+		AvailableDaysOfWeek: []string(profile.AvailableDaysOfWeek),
+		StartHour:           profile.StartHour,
+		EndHour:             profile.EndHour,
+		UnavailableDates:    profile.UnavailableDates,
 	}
 }
