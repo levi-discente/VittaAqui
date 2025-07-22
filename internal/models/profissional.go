@@ -38,6 +38,7 @@ type ProfessionalRating struct {
 type ProfessionalProfile struct {
 	gorm.Model
 	UserID                     uint `gorm:"uniqueIndex"`
+	User                       User `gorm:"foreignKey:UserID"`
 	Bio                        string
 	Category                   ProfessionalCategory
 	ProfissionalIdentification string `gorm:"uniqueIndex"`
@@ -53,6 +54,13 @@ type ProfessionalProfile struct {
 type ProfessionalProfileResponse struct {
 	ID                         uint     `json:"id"`
 	UserID                     uint     `json:"user_id"`
+	UserName                   string   `json:"user_name"`
+	Email                      string   `json:"email"`
+	Phone                      string   `json:"phone"`
+	Cep                        string   `json:"cep"`
+	UF                         string   `json:"uf"`
+	City                       string   `json:"city"`
+	Address                    string   `json:"address"`
 	Bio                        string   `json:"bio"`
 	Category                   string   `json:"category"`
 	ProfissionalIdentification string   `json:"profissional_identification"`
@@ -73,6 +81,13 @@ func ToProfessionalProfileResponse(profile *ProfessionalProfile) ProfessionalPro
 	return ProfessionalProfileResponse{
 		ID:                         profile.ID,
 		UserID:                     profile.UserID,
+		UserName:                   profile.User.Name,
+		Email:                      profile.User.Email,
+		Phone:                      profile.User.Phone,
+		Cep:                        profile.User.CEP,
+		UF:                         profile.User.UF,
+		City:                       profile.User.City,
+		Address:                    profile.User.Address,
 		Bio:                        profile.Bio,
 		Category:                   string(profile.Category),
 		ProfissionalIdentification: profile.ProfissionalIdentification,

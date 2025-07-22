@@ -1,3 +1,4 @@
+version: '3.8'
 services:
   postgres:
     image: postgres:15
@@ -9,7 +10,8 @@ services:
       POSTGRES_DB: vitta_db
     ports:
       - "5432:5432"
-
+    volumes:
+      - ./init_professionals.sql:/docker-entrypoint-initdb.d/init_professionals.sql:ro
 
   mongo:
     image: mongo:6
@@ -17,4 +19,3 @@ services:
     restart: always
     ports:
       - "27017:27017"
-

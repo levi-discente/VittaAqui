@@ -736,10 +736,22 @@ const docTemplate = `{
         "models.ProfessionalProfileResponse": {
             "type": "object",
             "properties": {
+                "address": {
+                    "type": "string"
+                },
                 "bio": {
                     "type": "string"
                 },
                 "category": {
+                    "type": "string"
+                },
+                "cep": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "email": {
                     "type": "string"
                 },
                 "id": {
@@ -753,6 +765,9 @@ const docTemplate = `{
                 },
                 "only_presential": {
                     "type": "boolean"
+                },
+                "phone": {
+                    "type": "string"
                 },
                 "price": {
                     "type": "number"
@@ -772,8 +787,14 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
+                "uf": {
+                    "type": "string"
+                },
                 "user_id": {
                     "type": "integer"
+                },
+                "user_name": {
+                    "type": "string"
                 }
             }
         },

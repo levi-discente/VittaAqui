@@ -103,10 +103,15 @@ func (h *UserHandler) Login(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid credentials"})
 	}
+
 	claims := jwt.MapClaims{
-		"user": user.ToUserResponse(),
-		"exp":  time.Now().Add(time.Hour * 24).Unix(),
+		"id":    user.ID,
+		"name":  user.Name,
+		"email": user.Email,
+		"role":  string(user.Role),
+		"exp":   time.Now().Add(time.Hour * 24).Unix(),
 	}
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	t, err := token.SignedString([]byte(h.cfg.JWTSecret))
 	if err != nil {

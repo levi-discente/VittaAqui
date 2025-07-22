@@ -20,19 +20,21 @@ func (r *ProfessionalProfileRepository) Create(profile *models.ProfessionalProfi
 
 func (r *ProfessionalProfileRepository) GetByUserID(userID uint) (*models.ProfessionalProfile, error) {
 	var profile models.ProfessionalProfile
-	err := r.db.Preload("Tags").Where("user_id = ?", userID).First(&profile).Error
+	err := r.db.Preload("Tags").Preload("User").Where("user_id = ?", userID).First(&profile).Error
 	return &profile, err
 }
 
 func (r *ProfessionalProfileRepository) GetByProfessionalID(profileID uint) (*models.ProfessionalProfile, error) {
 	var profile models.ProfessionalProfile
-	err := r.db.Preload("Tags").First(&profile, profileID).Error
+	err := r.db.Preload("Tags").Preload("User").First(&profile, profileID).Error
 	return &profile, err
 }
 
 func (r *ProfessionalProfileRepository) ListProfessionals(category, name string, tags []string, onlyOnline, onlyPresential *bool) ([]models.ProfessionalProfile, error) {
 	var profiles []models.ProfessionalProfile
-	tx := r.db.Model(&models.ProfessionalProfile{}).Preload("Tags")
+	tx := r.db.Model(&models.ProfessionalProfile{}).
+		Preload("Tags").
+		Preload("User")
 
 	if category != "" {
 		tx = tx.Where("category = ?", category)
@@ -41,19 +43,20 @@ func (r *ProfessionalProfileRepository) ListProfessionals(category, name string,
 		tx = tx.Joins("JOIN users ON users.id = professional_profiles.user_id").
 			Where("users.name ILIKE ?", "%"+name+"%")
 	}
-	if onlyOnline != nil {
-		tx = tx.Where("only_online = ?", *onlyOnline)
+
+	if onlyOnline != nil && *onlyOnline {
+		tx = tx.Where("only_online = ?", true)
 	}
-	if onlyPresential != nil {
-		tx = tx.Where("only_presential = ?", *onlyPresential)
+	if onlyPresential != nil && *onlyPresential {
+		tx = tx.Where("only_presential = ?", true)
 	}
+
 	if len(tags) > 0 {
 		tx = tx.Joins("JOIN profile_tags ON profile_tags.profile_id = professional_profiles.id").
 			Where("profile_tags.name IN ?", tags)
 	}
 
 	tx = tx.Distinct()
-
 	err := tx.Find(&profiles).Error
 	return profiles, err
 }
