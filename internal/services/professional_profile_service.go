@@ -61,6 +61,11 @@ func (s *ProfessionalProfileService) EditProfile(userID, profileID uint, data *m
 	profile.OnlyOnline = data.OnlyOnline
 	profile.OnlyPresential = data.OnlyPresential
 	profile.Tags = data.Tags
+	profile.AvailableDaysOfWeek = data.AvailableDaysOfWeek
+	profile.StartHour = data.StartHour
+	profile.EndHour = data.EndHour
+
+	profile.UnavailableDates = data.UnavailableDates
 
 	return s.repo.Edit(profile)
 }

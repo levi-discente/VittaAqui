@@ -19,7 +19,6 @@ func NewAppointmentService(repo *repositories.AppointmentRepository) *Appointmen
 }
 
 func (s *AppointmentService) CreateAppointment(patientID, professionalID uint, start, end time.Time) error {
-	// 1. Verifica conflitos de horário
 	conflicts, err := s.repo.FindConflicts(professionalID, start, end)
 	if err != nil {
 		return err
@@ -28,7 +27,15 @@ func (s *AppointmentService) CreateAppointment(patientID, professionalID uint, s
 		return ErrTimeConflict
 	}
 
-	// 2. Cria agendamento
+	cancelled, err := s.repo.FindCancelled(patientID, professionalID, start, end)
+
+	if err == nil && cancelled != nil {
+		cancelled.StartTime = start
+		cancelled.EndTime = end
+		cancelled.Status = "pending"
+		return s.repo.Update(cancelled.ID, cancelled.StartTime, cancelled.EndTime, cancelled.Status)
+	}
+
 	ap := &models.Appointment{
 		PatientID:      patientID,
 		ProfessionalID: professionalID,

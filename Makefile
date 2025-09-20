@@ -18,37 +18,37 @@ export PATH := $(GOBIN):$(PATH)
 
 ## dev     
 dev:
-	@echo "📦 Instalando ou atualizando o watcher..."
+	@echo "Instalando ou atualizando o watcher..."
 	go install github.com/air-verse/air@latest
-	@echo "▶️ Iniciando o modo dev (hot-reload)..."
+	@echo "Iniciando o modo dev (hot-reload)..."
 	air
 
 ## build   
 build:
-	@echo "🏗️  Building production binary"
+	@echo "Building production binary"
 	go build -o $(BINARY) $(CMD_DIR)
 
 ## run    
 run: build
-	@echo "▶️  Running $(BINARY)"
+	@echo "Running $(BINARY)"
 	./$(BINARY)
 
 ## test   
 test:
-	@echo "🧪 Running tests"
+	@echo "Running tests"
 	go test $(PKG) ./test
 
 ## clean     Remove binários e artefatos
 clean:
-	@echo "🧹 Cleaning up"
+	@echo "Cleaning up"
 	rm -rf bin/ tmp/ $(BINARY)
 
 
 ## docker    Builda imagens Docker em modo produção
 docker-up:
-	@echo "🐳 Building Docker image"
+	@echo "Building Docker image"
 	docker compose up -d
 
 docker-down:
-	@echo "🐳 Removing Docker image"
+	@echo "Removing Docker image"
 	docker compose down

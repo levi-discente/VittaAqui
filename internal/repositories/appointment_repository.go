@@ -15,6 +15,18 @@ func NewAppointmentRepository(db *gorm.DB) *AppointmentRepository {
 	return &AppointmentRepository{db}
 }
 
+func (r *AppointmentRepository) FindCancelled(patientID, professionalID uint, start, end time.Time) (*models.Appointment, error) {
+	var ap models.Appointment
+	err := r.db.
+		Where("patient_id = ? AND professional_id = ? AND status = ?", patientID, professionalID, "cancelled").
+		Where("start_time = ? AND end_time = ?", start, end).
+		First(&ap).Error
+	if err != nil {
+		return nil, err
+	}
+	return &ap, nil
+}
+
 func (r *AppointmentRepository) Create(appointment *models.Appointment) error {
 	return r.db.Create(appointment).Error
 }
@@ -34,8 +46,10 @@ func (r *AppointmentRepository) ListByPatient(patientID uint) ([]models.Appointm
 func (r *AppointmentRepository) FindConflicts(professionalID uint, start, end time.Time) ([]models.Appointment, error) {
 	var conflicts []models.Appointment
 
-	err := r.db.Where("professional_id = ?", professionalID).
+	err := r.db.
+		Where("professional_id = ?", professionalID).
 		Where("start_time < ? AND end_time > ?", end, start).
+		Where("status != ?", "cancelled").
 		Find(&conflicts).Error
 
 	return conflicts, err

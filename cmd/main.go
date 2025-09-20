@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"os"
-	"os/exec"
 	"os/signal"
 	"syscall"
 
@@ -20,33 +19,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
-	fiberSwagger "github.com/swaggo/fiber-swagger"
 )
 
 func main() {
-	cmd := exec.Command("go", "test", "./test/")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	log.Println("[INFO] Running tests...")
-	err := cmd.Run()
-	if err != nil {
-		log.Fatalf("[ERR] Tests failed: %v", err)
-	}
-	log.Println("[INFO] All Tests passed ✅")
-
-	swaggerInit := exec.Command(
-		"/home/levirenato/go/bin/swag",
-		"init",
-		"-g", "cmd/main.go",
-		"-o", "docs",
-	)
-
-	log.Println("[INFO] Generating Swagger docs…")
-	if err := swaggerInit.Run(); err != nil {
-		log.Fatalf("[ERR] Error initializing swagger: %v", err)
-	}
-
 	log.Println("[INFO] Loading environment variables…")
 	if err := godotenv.Load(); err != nil {
 		log.Println("[ERR] No .env file found, reading environment variables directly.")
@@ -75,9 +50,6 @@ func main() {
 		AllowMethods: "GET,POST,PUT,DELETE,OPTIONS",
 		AllowHeaders: "Origin, Content-Type, Authorization",
 	}))
-
-	// 2) (opcional) registra rota de Swagger
-	app.Get("/swagger/*", fiberSwagger.WrapHandler)
 
 	// 3) Rotas de autenticação (sem precisar de token)
 	auth := app.Group("/auth")
