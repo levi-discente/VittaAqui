@@ -11,7 +11,12 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./init_professionals.sql:/docker-entrypoint-initdb.d/init_professionals.sql:ro
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vitta_user -d vitta_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   mongo:
     image: mongo:6
@@ -19,3 +24,9 @@ services:
     restart: always
     ports:
       - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  postgres_data:
+  mongo_data:
