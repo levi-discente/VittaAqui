@@ -1,4 +1,3 @@
-"""SQLAlchemy database models."""
 
 from app.models.appointment import Appointment
 from app.models.enums import AppointmentStatus, ProfessionalCategory, Role

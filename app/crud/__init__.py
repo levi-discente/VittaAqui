@@ -1,4 +1,3 @@
-"""CRUD operations (Repository pattern)."""
 
 from app.crud.appointment import appointment_crud
 from app.crud.professional import professional_crud

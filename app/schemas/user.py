@@ -1,4 +1,3 @@
-"""User schemas for request/response validation."""
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
@@ -7,7 +6,6 @@ from app.utils.validators import clean_cpf, validate_cpf
 
 
 class UserBase(BaseModel):
-    """Base user schema with common fields."""
 
     name: str = Field(..., min_length=1, max_length=255)
     email: EmailStr
@@ -21,7 +19,6 @@ class UserBase(BaseModel):
     @field_validator("cpf")
     @classmethod
     def validate_cpf_field(cls, v: str) -> str:
-        """Validate and clean CPF."""
         cpf_clean = clean_cpf(v)
         if not validate_cpf(cpf_clean):
             raise ValueError("Invalid CPF")
@@ -29,7 +26,6 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
-    """Schema for creating a new user."""
 
     password: str = Field(..., min_length=8, max_length=100)
     role: Role
@@ -38,7 +34,6 @@ class UserCreate(UserBase):
 
 
 class UserUpdate(BaseModel):
-    """Schema for updating user information."""
 
     name: str | None = Field(None, min_length=1, max_length=255)
     email: EmailStr | None = None
@@ -50,7 +45,6 @@ class UserUpdate(BaseModel):
 
 
 class UserResponse(UserBase):
-    """Schema for user response."""
 
     id: int
     role: Role
@@ -59,7 +53,6 @@ class UserResponse(UserBase):
 
 
 class UserLogin(BaseModel):
-    """Schema for user login."""
 
     email: EmailStr
     password: str = Field(..., min_length=1)

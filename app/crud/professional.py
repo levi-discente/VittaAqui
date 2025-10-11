@@ -1,4 +1,3 @@
-"""CRUD operations for Professional Profile model."""
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,10 +10,8 @@ from app.schemas.professional import ProfessionalProfileCreate, ProfessionalProf
 
 
 class CRUDProfessionalProfile(CRUDBase[ProfessionalProfile, ProfessionalProfileCreate, ProfessionalProfileUpdate]):
-    """CRUD operations for Professional Profile."""
 
     async def get_by_user_id(self, db: AsyncSession, *, user_id: int) -> ProfessionalProfile | None:
-        """Get professional profile by user ID."""
         result = await db.execute(
             select(ProfessionalProfile)
             .where(ProfessionalProfile.user_id == user_id)
@@ -27,7 +24,6 @@ class CRUDProfessionalProfile(CRUDBase[ProfessionalProfile, ProfessionalProfileC
         return result.scalar_one_or_none()
 
     async def get_with_relations(self, db: AsyncSession, *, id: int) -> ProfessionalProfile | None:
-        """Get professional profile with all relations loaded."""
         result = await db.execute(
             select(ProfessionalProfile)
             .where(ProfessionalProfile.id == id)
@@ -42,7 +38,6 @@ class CRUDProfessionalProfile(CRUDBase[ProfessionalProfile, ProfessionalProfileC
     async def get_by_identification(
         self, db: AsyncSession, *, identification: str
     ) -> ProfessionalProfile | None:
-        """Get professional profile by professional identification."""
         result = await db.execute(
             select(ProfessionalProfile).where(
                 ProfessionalProfile.profissional_identification == identification
@@ -62,7 +57,6 @@ class CRUDProfessionalProfile(CRUDBase[ProfessionalProfile, ProfessionalProfileC
         skip: int = 0,
         limit: int = 100,
     ) -> list[ProfessionalProfile]:
-        """List professional profiles with filters."""
         query = select(ProfessionalProfile).options(
             joinedload(ProfessionalProfile.user),
             joinedload(ProfessionalProfile.tags),

@@ -1,4 +1,3 @@
-"""Appointment service."""
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,8 +11,6 @@ from app.utils.exceptions import ConflictException, NotFoundException
 async def create_appointment(
     db: AsyncSession, patient_id: int, appointment_in: AppointmentCreate
 ) -> Appointment:
-    """Create a new appointment."""
-    # Check for conflicts
     conflicts = await appointment_crud.find_conflicts(
         db,
         professional_id=appointment_in.professional_id,
@@ -24,7 +21,6 @@ async def create_appointment(
     if conflicts:
         raise ConflictException("Time slot already booked")
 
-    # Check if there's a cancelled appointment we can reuse
     cancelled = await appointment_crud.find_cancelled(
         db,
         patient_id=patient_id,
@@ -34,13 +30,11 @@ async def create_appointment(
     )
 
     if cancelled:
-        # Reuse cancelled appointment
         cancelled.status = AppointmentStatus.PENDING
         await db.commit()
         await db.refresh(cancelled)
         return cancelled
 
-    # Create new appointment
     appointment = Appointment(
         patient_id=patient_id,
         professional_id=appointment_in.professional_id,
@@ -55,7 +49,6 @@ async def create_appointment(
 
 
 async def get_appointment(db: AsyncSession, appointment_id: int) -> Appointment:
-    """Get appointment by ID."""
     appointment = await appointment_crud.get_with_relations(db, appointment_id=appointment_id)
     if not appointment:
         raise NotFoundException("Appointment not found")
@@ -65,7 +58,6 @@ async def get_appointment(db: AsyncSession, appointment_id: int) -> Appointment:
 async def get_patient_appointments(
     db: AsyncSession, patient_id: int, skip: int = 0, limit: int = 100
 ) -> list[AppointmentResponse]:
-    """Get all appointments for a patient."""
     appointments = await appointment_crud.get_by_patient(
         db, patient_id=patient_id, skip=skip, limit=limit
     )
@@ -90,7 +82,6 @@ async def get_patient_appointments(
 async def get_professional_appointments(
     db: AsyncSession, professional_id: int, skip: int = 0, limit: int = 100
 ) -> list[AppointmentResponse]:
-    """Get all appointments for a professional."""
     appointments = await appointment_crud.get_by_professional(
         db, professional_id=professional_id, skip=skip, limit=limit
     )
@@ -115,10 +106,8 @@ async def get_professional_appointments(
 async def update_appointment(
     db: AsyncSession, appointment_id: int, appointment_in: AppointmentUpdate
 ) -> Appointment:
-    """Update an appointment."""
     appointment = await get_appointment(db, appointment_id)
 
-    # If changing time, check for conflicts
     if appointment_in.start_time or appointment_in.end_time:
         start_time = appointment_in.start_time or appointment.start_time
         end_time = appointment_in.end_time or appointment.end_time
@@ -134,7 +123,6 @@ async def update_appointment(
         if conflicts:
             raise ConflictException("Time slot already booked")
 
-    # Update appointment
     updated = await appointment_crud.update(db, db_obj=appointment, obj_in=appointment_in)
     await db.commit()
     await db.refresh(updated)
@@ -142,7 +130,6 @@ async def update_appointment(
 
 
 async def delete_appointment(db: AsyncSession, appointment_id: int) -> None:
-    """Delete an appointment."""
     appointment = await get_appointment(db, appointment_id)
     await appointment_crud.delete(db, id=appointment.id)
     await db.commit()

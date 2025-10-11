@@ -1,122 +1,214 @@
-# vittaAqui
+# VittaAqui
 
-**vittaAqui** é uma plataforma para agendamento e realização de consultas com profissionais de saúde, permitindo tanto atendimentos presenciais quanto online (telemedicina).  
-O projeto contempla autenticação de usuários, controle de permissões, chat, cadastro de profissionais, e integrações com bancos de dados SQL/NoSQL e armazenamento de arquivos.
+Plataforma de telemedicina e agendamento de consultas desenvolvida com **FastAPI**, **SQLAlchemy 2.0**, **Alembic** e **uv**.
 
-> **Este sistema é um trabalho da disciplina "Projeto e Prática I".**
+> Este sistema é um trabalho da disciplina "Projeto e Prática I".
 
----
+## 🚀 Stack Tecnológica
 
-## 🚀 Funcionalidades
+- **FastAPI** - Framework web moderno e rápido
+- **SQLAlchemy 2.0** - ORM com suporte async
+- **Alembic** - Migrations de banco de dados
+- **Pydantic v2** - Validação de dados
+- **PostgreSQL** - Banco de dados relacional
+- **uv** - Gerenciador de pacotes ultra-rápido
+- **Ruff** - Linter e formatter
+- **Docker** - Containerização
 
-- Cadastro e login de usuários e profissionais de saúde (clínico geral, nutricionista, psicólogo, fisioterapeuta, psiquiatra, personal trainer).
-- Agendamento de consultas presenciais ou online.
-- Chat com suporte a envio de anexos.
-- Área do usuário para histórico, perfil, e documentos.
-- API RESTful com autenticação JWT.
-- Documentação automática via Swagger.
+## 📋 Pré-requisitos
 
----
+- Python 3.12+
+- PostgreSQL 15+
+- Docker e Docker Compose
+- uv (opcional, mas recomendado)
 
-## 🧑‍💻 Como rodar localmente
+## 🔧 Instalação
 
-### 1. **Pré-requisitos**
+### Opção 1: Docker (Recomendado)
 
-- [Go 1.21+](https://go.dev/doc/install)
-- [Docker e Docker Compose](https://docs.docker.com/get-docker/)
-
-### 2. **Clone o repositório**
-
-```sh
-git clone https://github.com/seu-usuario/vittaAqui.git
-cd vittaAqui
-```
-
-### 3. **Configure as variáveis de ambiente**
-
-Crie um arquivo `.env` baseado no `.env.example` fornecido:
-
-```sh
+```bash
 cp .env.example .env
-# Edite os valores conforme necessário (DB, JWT_SECRET, etc)
+
+docker compose up --build
 ```
 
-### 4. **Suba os bancos de dados**
+Acesse: http://localhost:8000/docs
 
-```sh
+### Opção 2: Local com uv
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+cd VittaAqui
+uv venv
+source .venv/bin/activate
+
+uv sync
+
+cp .env.example .env
+
+docker compose up -d postgres
+
+alembic upgrade head
+
+uvicorn app.main:app --reload
+```
+
+## 🐳 Docker
+
+### Comandos Úteis
+
+```bash
+docker compose up --build
+
 docker compose up -d
+
+docker compose logs -f app
+
+docker compose down
+
+docker compose down -v
 ```
 
-Isso iniciará os serviços do PostgreSQL e MongoDB, usados pela aplicação.
+### Modo Desenvolvimento (Automático)
 
-### 5. **Instale as dependências Go**
+O Docker Compose verifica a variável `DEBUG` no `.env`:
 
-```sh
-go mod download
-```
+**DEBUG=True** (Modo Dev):
+1. ✅ Aguarda PostgreSQL estar pronto
+2. ✅ Verifica se existem migrations
+3. ✅ Se não existir, cria automaticamente com `alembic revision --autogenerate`
+4. ✅ Aplica migrations com `alembic upgrade head`
+5. ✅ Executa `init_db.py` (fallback)
+6. ✅ **Popula banco com dados de exemplo** (`seed_db.py`)
+7. ✅ Inicia aplicação
 
-### 6. **(Opcional) Gere a documentação Swagger**
+**DEBUG=False** (Produção):
+- Executa apenas migrations existentes
+- Não popula dados de exemplo
 
-Se quiser atualizar a doc Swagger após mudanças nas rotas:
+**Tudo funciona com um único comando:** `docker compose up`
 
-```sh
-go install github.com/swaggo/swag/cmd/swag@latest
-swag init
-```
+### Dados de Exemplo (Seed)
 
-> **Se você não tiver o atalho com "swag" rode usando ~/go/bin/swag no lugar.**
+O banco é automaticamente populado com:
+- **2 pacientes** (João, Maria)
+- **3 profissionais** (Dr. Carlos - Médico, Dra. Ana - Nutricionista, Dr. Roberto - Psicólogo)
+- **Senha padrão**: `senha123`
+- **CPFs válidos** e únicos
 
-### 7. **Rode o servidor Go**
+**Logins disponíveis:**
+- `joao@example.com` (Paciente - CPF: 529.982.247-25)
+- `maria@example.com` (Paciente - CPF: 714.287.938-60)
+- `carlos@example.com` (Médico - CPF: 863.783.451-20)
+- `ana@example.com` (Nutricionista - CPF: 458.426.216-50)
+- `roberto@example.com` (Psicólogo - CPF: 291.658.734-91)
 
-```sh
-go run main.go
-```
-
-O servidor rodará por padrão em [http://localhost:8000](http://localhost:8000)
-
----
-
-## 📑 Como acessar o Swagger (Documentação da API)
-
-Com o servidor rodando, acesse:
-
-```
-http://localhost:8000/swagger/index.html
-```
-
-Aqui você pode testar os endpoints, autenticar com JWT e explorar toda a API REST da plataforma.
-
----
-
-## 🗃️ Estrutura do Projeto
+## 📦 Estrutura do Projeto
 
 ```
-.
-├── internal/
-│   ├── config/
-│   ├── handlers/
-│   ├── middlewares/
-│   ├── models/
-│   ├── repositories/
-│   ├── services/
-│   └── utils/
-├── main.go
-├── docker-compose.yml
-├── .env.example
-├── go.mod
-└── ...
+app/
+├── main.py
+├── core/
+│   ├── config.py
+│   ├── database.py
+│   └── security.py
+├── models/
+├── schemas/
+├── api/
+│   ├── deps.py
+│   └── v1/
+├── crud/
+├── services/
+└── utils/
 ```
 
----
+## 🔐 Autenticação
 
-## 👨‍🏫 Sobre
+A API usa **JWT (JSON Web Tokens)**.
 
-Este projeto foi desenvolvido como parte da disciplina **Projeto e Prática I** e tem fins acadêmicos, servindo de base para um sistema real de gestão e teleatendimento na área da saúde.
+```bash
+curl -X POST http://localhost:8000/api/auth/login \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "email=user@example.com&password=senha123"
 
----
+curl http://localhost:8000/api/users/me \
+  -H "Authorization: Bearer SEU_TOKEN"
+```
 
-> **Atenção:** Não suba sua `.env` real no GitHub. Sempre use `.env.example` para o time.
+## 📝 Migrations
 
----
+```bash
+alembic revision --autogenerate -m "Descrição"
 
-**Sinta-se à vontade para sugerir melhorias ou contribuir!**
+alembic upgrade head
+
+alembic downgrade -1
+
+alembic history
+```
+
+## 🌐 Endpoints
+
+### Auth
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+
+### Users
+- `GET /api/users/me`
+- `PUT /api/users/me`
+- `DELETE /api/users/me`
+- `GET /api/users/{id}`
+- `GET /api/users/`
+
+### Professionals
+- `POST /api/professionals/`
+- `GET /api/professionals/me`
+- `PUT /api/professionals/me`
+- `GET /api/professionals/`
+- `GET /api/professionals/{id}`
+
+### Appointments
+- `POST /api/appointments/`
+- `GET /api/appointments/my-appointments`
+- `GET /api/appointments/{id}`
+- `PUT /api/appointments/{id}`
+- `DELETE /api/appointments/{id}`
+
+## 🧪 Testes
+
+```bash
+pytest
+
+pytest --cov=app --cov-report=html
+
+pytest tests/test_auth.py -v
+```
+
+## 🔍 Qualidade de Código
+
+```bash
+ruff check .
+ruff format .
+
+pre-commit install
+pre-commit run --all-files
+```
+
+## 📚 Documentação
+
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
+- **OpenAPI JSON**: http://localhost:8000/openapi.json
+
+## 🤝 Contribuindo
+
+1. `pre-commit install`
+2. `git checkout -b feature/nova-feature`
+3. `git commit -m "feat: adiciona nova feature"`
+4. `git push origin feature/nova-feature`
+5. Abra um Pull Request
+
+## 📄 Licença
+
+Trabalho acadêmico da disciplina "Projeto e Prática I".

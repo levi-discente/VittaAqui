@@ -1,4 +1,3 @@
-"""Security utilities for password hashing and JWT tokens."""
 
 from datetime import datetime, timedelta
 from typing import Any
@@ -8,22 +7,18 @@ from passlib.context import CryptContext
 
 from app.core.config import settings
 
-# Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a password against a hash."""
     return pwd_context.verify(plain_password, hashed_password)
 
 
 def get_password_hash(password: str) -> str:
-    """Generate password hash."""
     return pwd_context.hash(password)
 
 
 def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = None) -> str:
-    """Create JWT access token."""
     to_encode = data.copy()
 
     if expires_delta:
@@ -38,5 +33,4 @@ def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = 
 
 
 def decode_access_token(token: str) -> dict[str, Any]:
-    """Decode and verify JWT token."""
     return jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])

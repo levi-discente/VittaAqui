@@ -1,4 +1,3 @@
-"""Pydantic schemas for request/response validation."""
 
 from app.schemas.appointment import (
     AppointmentCreate,
@@ -18,16 +17,13 @@ from app.schemas.professional import (
 from app.schemas.user import UserCreate, UserLogin, UserResponse, UserUpdate
 
 __all__ = [
-    # User
     "UserCreate",
     "UserUpdate",
     "UserResponse",
     "UserLogin",
-    # Auth
     "Token",
     "TokenData",
     "LoginResponse",
-    # Professional
     "ProfessionalProfileCreate",
     "ProfessionalProfileUpdate",
     "ProfessionalProfileResponse",
@@ -35,7 +31,6 @@ __all__ = [
     "ProfileTagResponse",
     "UnavailableDateCreate",
     "UnavailableDateResponse",
-    # Appointment
     "AppointmentCreate",
     "AppointmentUpdate",
     "AppointmentResponse",

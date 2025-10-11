@@ -1,4 +1,3 @@
-"""Authentication service."""
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,7 +10,6 @@ from app.utils.exceptions import BadRequestException, UnauthorizedException
 
 
 async def authenticate_user(db: AsyncSession, email: str, password: str) -> User:
-    """Authenticate user by email and password."""
     user = await user_crud.get_by_email(db, email=email)
 
     if not user:
@@ -24,10 +22,8 @@ async def authenticate_user(db: AsyncSession, email: str, password: str) -> User
 
 
 async def login(db: AsyncSession, email: str, password: str) -> LoginResponse:
-    """Login user and return token."""
     user = await authenticate_user(db, email, password)
 
-    # Create JWT token
     token_data = {
         "id": user.id,
         "email": user.email,
@@ -36,11 +32,9 @@ async def login(db: AsyncSession, email: str, password: str) -> LoginResponse:
     }
     access_token = create_access_token(token_data)
 
-    # Return response
     user_response = UserResponse.model_validate(user)
     return LoginResponse(token=access_token, user=user_response)
 
 
 def hash_password(password: str) -> str:
-    """Hash a password."""
     return get_password_hash(password)

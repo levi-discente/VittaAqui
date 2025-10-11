@@ -1,35 +1,28 @@
-"""Application configuration using Pydantic Settings."""
 
-from pydantic import PostgresDsn, field_validator
+from pydantic import PostgresDsn, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    """Application settings."""
 
-    # Application
     app_name: str = "VittaAqui"
     app_version: str = "0.1.0"
     debug: bool = False
 
-    # Database
     database_url: PostgresDsn
 
-    # JWT
     jwt_secret: str
     jwt_algorithm: str = "HS256"
-    access_token_expire_minutes: int = 1440  # 24 hours
+    access_token_expire_minutes: int = 1440
 
-    # CORS
-    cors_origins: list[str] = ["*"]
+    cors_origins: str = "*"
 
-    @field_validator("cors_origins", mode="before")
-    @classmethod
-    def parse_cors_origins(cls, v: str | list[str]) -> list[str]:
-        """Parse CORS origins from string or list."""
-        if isinstance(v, str):
-            return [origin.strip() for origin in v.split(",")]
-        return v
+    @computed_field
+    @property
+    def cors_origins_list(self) -> list[str]:
+        if isinstance(self.cors_origins, str):
+            return [origin.strip() for origin in self.cors_origins.split(",")]
+        return self.cors_origins
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -39,5 +32,4 @@ class Settings(BaseSettings):
     )
 
 
-# Global settings instance
 settings = Settings()

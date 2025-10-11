@@ -1,17 +1,14 @@
-"""Enumerations for database models."""
 
 from enum import Enum
 
 
 class Role(str, Enum):
-    """User role enumeration."""
 
     PATIENT = "patient"
     PROFESSIONAL = "professional"
 
 
 class ProfessionalCategory(str, Enum):
-    """Professional category enumeration."""
 
     NUTRITIONIST = "nutritionist"
     PERSONAL_TRAINER = "personal_trainer"
@@ -24,7 +21,6 @@ class ProfessionalCategory(str, Enum):
 
 
 class AppointmentStatus(str, Enum):
-    """Appointment status enumeration."""
 
     PENDING = "pending"
     CONFIRMED = "confirmed"

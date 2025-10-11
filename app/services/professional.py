@@ -1,4 +1,3 @@
-"""Professional profile service."""
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -19,20 +18,16 @@ async def create_professional_profile(
     profissional_identification: str,
     category: str,
 ) -> ProfessionalProfile:
-    """Create a basic professional profile (called during user registration)."""
-    # Check if profile already exists
     existing = await professional_crud.get_by_user_id(db, user_id=user_id)
     if existing:
         raise BadRequestException("Professional profile already exists")
 
-    # Check if identification already exists
     existing_id = await professional_crud.get_by_identification(
         db, identification=profissional_identification
     )
     if existing_id:
         raise BadRequestException("Professional identification already in use")
 
-    # Create profile
     profile = ProfessionalProfile(
         user_id=user_id,
         profissional_identification=profissional_identification,
@@ -46,32 +41,26 @@ async def create_professional_profile(
 async def create_full_professional_profile(
     db: AsyncSession, user_id: int, profile_in: ProfessionalProfileCreate
 ) -> ProfessionalProfile:
-    """Create a complete professional profile with all details."""
-    # Check if profile already exists
     existing = await professional_crud.get_by_user_id(db, user_id=user_id)
     if existing:
         raise BadRequestException("Professional profile already exists")
 
-    # Check if identification already exists
     existing_id = await professional_crud.get_by_identification(
         db, identification=profile_in.profissional_identification
     )
     if existing_id:
         raise BadRequestException("Professional identification already in use")
 
-    # Create profile
     profile_data = profile_in.model_dump(exclude={"tags", "unavailable_dates"})
     profile = ProfessionalProfile(**profile_data, user_id=user_id)
     db.add(profile)
     await db.flush()
 
-    # Add tags
     if profile_in.tags:
         for tag_name in profile_in.tags:
             tag = ProfileTag(profile_id=profile.id, name=tag_name)
             db.add(tag)
 
-    # Add unavailable dates
     if profile_in.unavailable_dates:
         for date_in in profile_in.unavailable_dates:
             unavailable = UnavailableDate(
@@ -87,7 +76,6 @@ async def create_full_professional_profile(
 
 
 async def get_professional_profile(db: AsyncSession, profile_id: int) -> ProfessionalProfile:
-    """Get professional profile by ID."""
     profile = await professional_crud.get_with_relations(db, id=profile_id)
     if not profile:
         raise NotFoundException("Professional profile not found")
@@ -97,7 +85,6 @@ async def get_professional_profile(db: AsyncSession, profile_id: int) -> Profess
 async def get_professional_profile_by_user(
     db: AsyncSession, user_id: int
 ) -> ProfessionalProfile:
-    """Get professional profile by user ID."""
     profile = await professional_crud.get_by_user_id(db, user_id=user_id)
     if not profile:
         raise NotFoundException("Professional profile not found")
@@ -107,40 +94,31 @@ async def get_professional_profile_by_user(
 async def update_professional_profile(
     db: AsyncSession, user_id: int, profile_id: int, profile_in: ProfessionalProfileUpdate
 ) -> ProfessionalProfile:
-    """Update professional profile."""
     profile = await get_professional_profile(db, profile_id)
 
-    # Check ownership
     if profile.user_id != user_id:
         raise ForbiddenException("Not authorized to update this profile")
 
-    # Update basic fields
     update_data = profile_in.model_dump(
         exclude={"tags", "unavailable_dates"}, exclude_unset=True
     )
     for field, value in update_data.items():
         setattr(profile, field, value)
 
-    # Update tags if provided
     if profile_in.tags is not None:
-        # Remove old tags
         await db.execute(
             ProfileTag.__table__.delete().where(ProfileTag.profile_id == profile.id)
         )
-        # Add new tags
         for tag_name in profile_in.tags:
             tag = ProfileTag(profile_id=profile.id, name=tag_name)
             db.add(tag)
 
-    # Update unavailable dates if provided
     if profile_in.unavailable_dates is not None:
-        # Remove old dates
         await db.execute(
             UnavailableDate.__table__.delete().where(
                 UnavailableDate.profile_id == profile.id
             )
         )
-        # Add new dates
         for date_in in profile_in.unavailable_dates:
             unavailable = UnavailableDate(
                 profile_id=profile.id,
@@ -157,10 +135,8 @@ async def update_professional_profile(
 async def delete_professional_profile(
     db: AsyncSession, user_id: int, profile_id: int
 ) -> None:
-    """Delete professional profile."""
     profile = await get_professional_profile(db, profile_id)
 
-    # Check ownership
     if profile.user_id != user_id:
         raise ForbiddenException("Not authorized to delete this profile")
 
@@ -178,7 +154,6 @@ async def list_professionals(
     skip: int = 0,
     limit: int = 100,
 ) -> list[ProfessionalProfileResponse]:
-    """List professional profiles with filters."""
     profiles = await professional_crud.list_professionals(
         db,
         category=category,
@@ -190,7 +165,6 @@ async def list_professionals(
         limit=limit,
     )
 
-    # Convert to response schema
     responses = []
     for profile in profiles:
         response = ProfessionalProfileResponse(

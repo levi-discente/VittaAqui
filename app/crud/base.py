@@ -1,4 +1,3 @@
-"""Base CRUD operations."""
 
 from typing import Any, Generic, TypeVar
 
@@ -14,26 +13,21 @@ UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 
 
 class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
-    """Base class for CRUD operations."""
 
     def __init__(self, model: type[ModelType]):
-        """Initialize CRUD with model class."""
         self.model = model
 
     async def get(self, db: AsyncSession, id: int) -> ModelType | None:
-        """Get a single record by ID."""
         result = await db.execute(select(self.model).where(self.model.id == id))
         return result.scalar_one_or_none()
 
     async def get_multi(
         self, db: AsyncSession, *, skip: int = 0, limit: int = 100
     ) -> list[ModelType]:
-        """Get multiple records with pagination."""
         result = await db.execute(select(self.model).offset(skip).limit(limit))
         return list(result.scalars().all())
 
     async def create(self, db: AsyncSession, *, obj_in: CreateSchemaType) -> ModelType:
-        """Create a new record."""
         obj_data = obj_in.model_dump()
         db_obj = self.model(**obj_data)
         db.add(db_obj)
@@ -48,7 +42,6 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         db_obj: ModelType,
         obj_in: UpdateSchemaType | dict[str, Any],
     ) -> ModelType:
-        """Update a record."""
         if isinstance(obj_in, dict):
             update_data = obj_in
         else:
@@ -63,7 +56,6 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return db_obj
 
     async def delete(self, db: AsyncSession, *, id: int) -> ModelType | None:
-        """Delete a record."""
         obj = await self.get(db, id=id)
         if obj:
             await db.delete(obj)

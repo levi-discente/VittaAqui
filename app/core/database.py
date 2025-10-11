@@ -1,4 +1,3 @@
-"""Database configuration and session management."""
 
 from collections.abc import AsyncGenerator
 
@@ -8,7 +7,6 @@ from sqlalchemy.orm import DeclarativeBase
 
 from app.core.config import settings
 
-# Create async engine
 engine = create_async_engine(
     str(settings.database_url),
     echo=settings.debug,
@@ -16,7 +14,6 @@ engine = create_async_engine(
     pool_pre_ping=True,
 )
 
-# Create async session factory
 AsyncSessionLocal = async_sessionmaker(
     engine,
     class_=AsyncSession,
@@ -26,7 +23,6 @@ AsyncSessionLocal = async_sessionmaker(
 )
 
 
-# Naming convention for constraints
 convention = {
     "ix": "ix_%(column_0_label)s",
     "uq": "uq_%(table_name)s_%(column_0_name)s",
@@ -37,13 +33,11 @@ convention = {
 
 
 class Base(DeclarativeBase):
-    """Base class for all database models."""
 
     metadata = MetaData(naming_convention=convention)
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    """Dependency for getting async database sessions."""
     async with AsyncSessionLocal() as session:
         try:
             yield session

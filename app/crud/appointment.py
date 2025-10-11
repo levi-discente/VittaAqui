@@ -1,4 +1,3 @@
-"""CRUD operations for Appointment model."""
 
 from datetime import datetime
 
@@ -14,12 +13,10 @@ from app.schemas.appointment import AppointmentCreate, AppointmentUpdate
 
 
 class CRUDAppointment(CRUDBase[Appointment, AppointmentCreate, AppointmentUpdate]):
-    """CRUD operations for Appointment."""
 
     async def get_with_relations(
         self, db: AsyncSession, *, appointment_id: int
     ) -> Appointment | None:
-        """Get appointment with patient and professional loaded."""
         result = await db.execute(
             select(Appointment)
             .where(Appointment.id == appointment_id)
@@ -35,7 +32,6 @@ class CRUDAppointment(CRUDBase[Appointment, AppointmentCreate, AppointmentUpdate
     async def get_by_patient(
         self, db: AsyncSession, *, patient_id: int, skip: int = 0, limit: int = 100
     ) -> list[Appointment]:
-        """Get appointments by patient ID."""
         result = await db.execute(
             select(Appointment)
             .where(Appointment.patient_id == patient_id)
@@ -52,7 +48,6 @@ class CRUDAppointment(CRUDBase[Appointment, AppointmentCreate, AppointmentUpdate
     async def get_by_professional(
         self, db: AsyncSession, *, professional_id: int, skip: int = 0, limit: int = 100
     ) -> list[Appointment]:
-        """Get appointments by professional ID."""
         result = await db.execute(
             select(Appointment)
             .where(Appointment.professional_id == professional_id)
@@ -71,7 +66,6 @@ class CRUDAppointment(CRUDBase[Appointment, AppointmentCreate, AppointmentUpdate
         end_time: datetime,
         exclude_id: int | None = None,
     ) -> list[Appointment]:
-        """Find conflicting appointments for a professional in a time range."""
         query = select(Appointment).where(
             Appointment.professional_id == professional_id,
             Appointment.start_time < end_time,
@@ -94,7 +88,6 @@ class CRUDAppointment(CRUDBase[Appointment, AppointmentCreate, AppointmentUpdate
         start_time: datetime,
         end_time: datetime,
     ) -> Appointment | None:
-        """Find a cancelled appointment with same details (for reuse)."""
         result = await db.execute(
             select(Appointment).where(
                 Appointment.patient_id == patient_id,

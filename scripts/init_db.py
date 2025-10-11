@@ -1,4 +1,3 @@
-"""Initialize database with tables."""
 
 import asyncio
 import logging
@@ -12,14 +11,10 @@ logger = logging.getLogger(__name__)
 
 
 async def init_db():
-    """Create all database tables."""
     engine = create_async_engine(str(settings.database_url), echo=True)
 
     async with engine.begin() as conn:
-        # Drop all tables (use with caution!)
-        # await conn.run_sync(Base.metadata.drop_all)
 
-        # Create all tables
         await conn.run_sync(Base.metadata.create_all)
 
     await engine.dispose()

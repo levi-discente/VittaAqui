@@ -1251,6 +1251,7 @@ source = { editable = "." }
 dependencies = [
     { name = "alembic" },
     { name = "asyncpg" },
+    { name = "bcrypt" },
     { name = "fastapi", extra = ["standard"] },
     { name = "passlib", extra = ["bcrypt"] },
     { name = "pydantic" },
@@ -1276,9 +1277,10 @@ dev = [
 requires-dist = [
     { name = "alembic" },
     { name = "asyncpg" },
+    { name = "bcrypt", specifier = ">=4.0.1" },
     { name = "fastapi", extras = ["standard"] },
     { name = "httpx", marker = "extra == 'dev'", specifier = ">=0.27.0" },
-    { name = "passlib", extras = ["bcrypt"] },
+    { name = "passlib", extras = ["bcrypt"], specifier = ">=1.7.4" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=4.0.0" },
     { name = "pydantic" },
     { name = "pydantic-settings" },

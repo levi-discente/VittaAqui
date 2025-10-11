@@ -1,4 +1,3 @@
-"""Appointment model."""
 
 from datetime import datetime
 from typing import TYPE_CHECKING
@@ -15,32 +14,27 @@ if TYPE_CHECKING:
 
 
 class Appointment(Base):
-    """Appointment model for scheduling consultations."""
 
     __tablename__ = "appointments"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
 
-    # Foreign keys
     patient_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     professional_id: Mapped[int] = mapped_column(
         ForeignKey("professional_profiles.id"), index=True
     )
 
-    # Appointment details
     start_time: Mapped[datetime] = mapped_column(index=True)
     end_time: Mapped[datetime] = mapped_column()
     status: Mapped[AppointmentStatus] = mapped_column(
         String(20), default=AppointmentStatus.PENDING
     )
 
-    # Timestamps
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(
         default=datetime.now, onupdate=datetime.now
     )
 
-    # Relationships
     patient: Mapped["User"] = relationship(
         back_populates="patient_appointments",
         foreign_keys=[patient_id],
