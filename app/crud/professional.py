@@ -31,6 +31,7 @@ class CRUDProfessionalProfile(CRUDBase[ProfessionalProfile, ProfessionalProfileC
                 joinedload(ProfessionalProfile.user),
                 joinedload(ProfessionalProfile.tags),
                 joinedload(ProfessionalProfile.unavailable_dates),
+                joinedload(ProfessionalProfile.reviews).joinedload("patient"),
             )
         )
         return result.unique().scalar_one_or_none()

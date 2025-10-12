@@ -10,6 +10,7 @@ from app.models.enums import ProfessionalCategory
 
 if TYPE_CHECKING:
     from app.models.appointment import Appointment
+    from app.models.review import Review
     from app.models.user import User
 
 
@@ -58,6 +59,12 @@ class ProfessionalProfile(Base):
     appointments: Mapped[list["Appointment"]] = relationship(
         back_populates="professional",
         foreign_keys="Appointment.professional_id",
+        cascade="all, delete-orphan",
+    )
+
+    reviews: Mapped[list["Review"]] = relationship(
+        back_populates="professional",
+        foreign_keys="Review.professional_id",
         cascade="all, delete-orphan",
     )
 

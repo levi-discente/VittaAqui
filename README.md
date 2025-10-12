@@ -14,6 +14,7 @@
     - [Dados de Exemplo (Seed)](#dados-de-exemplo-seed)
   - [✨ Funcionalidades Principais](#funcionalidades-principais)
     - [🏥 Sistema de Agendamentos](#🏥-sistema-de-agendamentos)
+    - [⭐ Sistema de Avaliações](#⭐-sistema-de-avaliações)
     - [🔐 Autenticação e Autorização](#🔐-autenticação-e-autorização)
     - [📊 Compatibilidade Frontend](#📊-compatibilidade-frontend)
   - [📦 Estrutura do Projeto](#📦-estrutura-do-projeto)
@@ -33,12 +34,21 @@
       - [**PUT /api/professionals/{profile_id}** ou **PUT /api/professionals/me**](#put-apiprofessionalsprofileid-ou-put-apiprofessionalsme)
       - [**GET /api/professionals/{profile_id}/appointments**](#get-apiprofessionalsprofileidappointments)
       - [**GET /api/professionals/{profile_id}/available-slots**](#get-apiprofessionalsprofileidavailable-slots)
+      - [**GET /api/professionals/{profile_id}/reviews**](#get-apiprofessionalsprofileidreviews)
+      - [**GET /api/professionals/{profile_id}/reviews/stats**](#get-apiprofessionalsprofileidreviewsstats)
     - [📅 Agendamentos (`/api/appointments`)](#📅-agendamentos-apiappointments)
       - [**POST /api/appointments/**](#post-apiappointments)
       - [**GET /api/appointments/my** ou **GET /api/appointments/my-appointments**](#get-apiappointmentsmy-ou-get-apiappointmentsmy-appointments)
       - [**GET /api/appointments/{appointment_id}**](#get-apiappointmentsappointmentid)
       - [**PUT /api/appointments/{appointment_id}**](#put-apiappointmentsappointmentid)
       - [**DELETE /api/appointments/{appointment_id}**](#delete-apiappointmentsappointmentid)
+    - [⭐ Avaliações (`/api/reviews`)](#⭐-avaliações-apireviews)
+      - [**POST /api/reviews/**](#post-apireviews)
+      - [**GET /api/reviews/my**](#get-apireviews my)
+      - [**GET /api/reviews/{review_id}**](#get-apireviewsreviewid)
+      - [**PUT /api/reviews/{review_id}**](#put-apireviewsreviewid)
+      - [**DELETE /api/reviews/{review_id}**](#delete-apireviewsreviewid)
+      - [**GET /api/reviews/appointment/{appointment_id}**](#get-apireviewsappointmentappointmentid)
     - [🔑 Autenticação em Rotas Protegidas](#🔑-autenticação-em-rotas-protegidas)
   - [🧪 Testes](#🧪-testes)
   - [🔍 Qualidade de Código](#🔍-qualidade-de-código)
@@ -174,6 +184,16 @@ O banco é automaticamente populado com:
 - **Validação de conflitos** de horários
 - **Gerenciamento de status** (pending, confirmed, completed, cancelled)
 
+### ⭐ Sistema de Avaliações
+
+- **Avaliações vinculadas a consultas** - Apenas pacientes que tiveram consulta concluída podem avaliar
+- **Rating de 1.0 a 5.0** com comentários opcionais
+- **Avaliações anônimas** - Paciente pode escolher não exibir seu nome
+- **Recálculo automático** - Rating médio do profissional atualizado em tempo real
+- **Estatísticas detalhadas** - Distribuição de estrelas (1-5)
+- **Reviews incluídas no perfil** - Ao buscar profissional, vem com últimas 5 avaliações
+- **1 avaliação por consulta** - Evita spam e garante autenticidade
+
 ### 🔐 Autenticação e Autorização
 
 - **JWT tokens** com expiração configurável
@@ -200,18 +220,21 @@ app/
 ├── models/                # Modelos SQLAlchemy
 │   ├── user.py
 │   ├── professional.py
-│   └── appointment.py
+│   ├── appointment.py
+│   └── review.py
 ├── schemas/               # Schemas Pydantic
 │   ├── user.py
 │   ├── professional.py
-│   └── appointment.py
+│   ├── appointment.py
+│   └── review.py
 ├── api/
 │   ├── deps.py           # Dependências (auth, db)
 │   └── v1/               # Rotas da API v1
 │       ├── auth.py
 │       ├── users.py
 │       ├── professionals.py
-│       └── appointments.py
+│       ├── appointments.py
+│       └── reviews.py
 ├── crud/                 # Operações de banco de dados
 ├── services/             # Lógica de negócio
 └── utils/                # Utilitários e exceções
@@ -318,6 +341,40 @@ GET /api/professionals/?category=physician&name=Carlos&skip=0&limit=10
 #### **GET /api/professionals/{profile_id}**
 
 Buscar perfil profissional por ID do perfil.
+
+**Query Params:**
+- `include_reviews` (default: `true`) - Incluir últimas avaliações
+- `limit_reviews` (default: `5`, max: `20`) - Quantidade de reviews a retornar
+
+**Exemplo:**
+
+```bash
+GET /api/professionals/1?include_reviews=true&limit_reviews=5
+```
+
+**Saída (com reviews):**
+
+```json
+{
+  "id": 1,
+  "user_name": "Dr. Carlos Silva",
+  "category": "physician",
+  "rating": 4.8,
+  "num_reviews": 127,
+  "reviews": [
+    {
+      "id": 45,
+      "rating": 5.0,
+      "comment": "Excelente profissional!",
+      "patient_name": "Maria Silva",
+      "is_anonymous": false,
+      "created_at": "2025-10-12T14:30:00"
+    }
+  ]
+}
+```
+
+**Nota:** Por padrão, retorna as 5 avaliações mais recentes. Use `include_reviews=false` para não incluir reviews.
 
 #### **GET /api/professional/profile/user/{user_id}**
 
@@ -446,6 +503,122 @@ Atualizar agendamento.
 #### **DELETE /api/appointments/{appointment_id}**
 
 Cancelar agendamento.
+
+---
+
+### ⭐ Avaliações (`/api/reviews`)
+
+#### **POST /api/reviews/**
+
+Criar avaliação para uma consulta concluída (apenas pacientes).
+
+**Entrada (JSON):**
+
+```json
+{
+  "appointment_id": 1,
+  "rating": 5.0,
+  "comment": "Excelente profissional! Muito atencioso.",
+  "is_anonymous": false
+}
+```
+
+**Validações:**
+- Apenas pacientes podem criar reviews
+- Appointment deve estar com status `completed`
+- Paciente deve ser dono do appointment
+- Apenas 1 review por appointment
+
+**Nota:** O rating do profissional é atualizado automaticamente.
+
+#### **GET /api/reviews/my**
+
+Buscar minhas avaliações (paciente).
+
+**Query Params:** `skip`, `limit`
+
+#### **GET /api/reviews/{review_id}**
+
+Buscar avaliação específica por ID.
+
+#### **PUT /api/reviews/{review_id}**
+
+Editar avaliação (apenas o paciente que criou).
+
+**Entrada (JSON - todos opcionais):**
+
+```json
+{
+  "rating": 4.5,
+  "comment": "Atualizado: Muito bom!"
+}
+```
+
+#### **DELETE /api/reviews/{review_id}**
+
+Deletar avaliação (apenas o paciente que criou).
+
+**Nota:** O rating do profissional é recalculado automaticamente.
+
+#### **GET /api/reviews/appointment/{appointment_id}**
+
+Buscar avaliação de um appointment específico.
+
+**Retorna:** Review se existir, ou `null`.
+
+---
+
+#### **GET /api/professionals/{profile_id}/reviews**
+
+Listar todas as avaliações de um profissional (com paginação).
+
+**Query Params:**
+- `skip` (default: 0)
+- `limit` (default: 100, max: 100)
+
+**Exemplo:**
+
+```bash
+GET /api/professionals/1/reviews?skip=0&limit=10
+```
+
+**Saída:**
+
+```json
+{
+  "total": 127,
+  "items": [
+    {
+      "id": 1,
+      "rating": 5.0,
+      "comment": "Excelente profissional!",
+      "patient_name": "Maria Silva",
+      "is_anonymous": false,
+      "created_at": "2025-10-12T14:30:00"
+    }
+  ]
+}
+```
+
+#### **GET /api/professionals/{profile_id}/reviews/stats**
+
+Obter estatísticas de avaliações de um profissional.
+
+**Saída:**
+
+```json
+{
+  "average_rating": 4.8,
+  "total_reviews": 127,
+  "distribution": {
+    "5": 95,
+    "4": 25,
+    "3": 5,
+    "2": 2,
+    "1": 0
+  }
+}
+```
 
 ---
 

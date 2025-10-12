@@ -17,6 +17,7 @@ dependencies = [
     "python-multipart",
     "python-dotenv",
     "validate-docbr",
+    "debugpy>=1.8.17",
 ]
 
 [project.optional-dependencies]

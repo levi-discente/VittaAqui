@@ -117,6 +117,19 @@ class ProfessionalProfileResponse(ProfessionalProfileBase):
 
     tags: list[str] = []
     unavailable_dates: list[UnavailableDateResponse] = []
+    reviews: list["ReviewSummary"] = []
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ReviewSummary(BaseModel):
+    """Resumo de avaliação para incluir no perfil do profissional"""
+    id: int
+    rating: float
+    comment: str | None = None
+    patient_name: str | None = None
+    is_anonymous: bool
+    created_at: str
 
     model_config = ConfigDict(from_attributes=True)
 
