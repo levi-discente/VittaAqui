@@ -1,4 +1,3 @@
-
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
@@ -35,7 +34,7 @@ async def get_current_user(
     except JWTError as e:
         raise credentials_exception from e
 
-    user = await user_crud.get(db, id=user_id)
+    user = await user_crud.get(db, pk=user_id)
     if user is None:
         raise credentials_exception
 

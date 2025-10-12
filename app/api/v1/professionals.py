@@ -1,4 +1,3 @@
-
 from datetime import date
 from typing import Annotated
 
@@ -70,7 +69,9 @@ async def get_my_professional_profile(
     if current_user.role != Role.PROFESSIONAL:
         raise ForbiddenException("Only professionals have profiles")
 
-    profile = await professional_service.get_professional_profile_by_user(db, current_user.id)
+    profile = await professional_service.get_professional_profile_by_user(
+        db, current_user.id
+    )
 
     return ProfessionalProfileResponse(
         id=profile.id,
@@ -108,7 +109,9 @@ async def update_my_professional_profile(
     if current_user.role != Role.PROFESSIONAL:
         raise ForbiddenException("Only professionals have profiles")
 
-    profile = await professional_service.get_professional_profile_by_user(db, current_user.id)
+    profile = await professional_service.get_professional_profile_by_user(
+        db, current_user.id
+    )
     updated_profile = await professional_service.update_professional_profile(
         db, current_user.id, profile.id, profile_in
     )
@@ -155,7 +158,7 @@ async def list_professionals(
     category = category if category and category.strip() else None
     name = name if name and name.strip() else None
     tags = [t for t in (tags or []) if t and t.strip()] or None
-    
+
     return await professional_service.list_professionals(
         db,
         category=category,
@@ -280,7 +283,9 @@ async def delete_professional_profile(
     current_user: CurrentUser,
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
-    await professional_service.delete_professional_profile(db, current_user.id, profile_id)
+    await professional_service.delete_professional_profile(
+        db, current_user.id, profile_id
+    )
 
 
 @router.get("/{profile_id}/appointments", response_model=list[AppointmentResponse])

@@ -1,7 +1,6 @@
-
 from datetime import date, datetime, timedelta
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.appointment import appointment_crud
@@ -15,7 +14,11 @@ from app.schemas.professional import (
     ProfessionalProfileUpdate,
     TimeSlot,
 )
-from app.utils.exceptions import BadRequestException, ForbiddenException, NotFoundException
+from app.utils.exceptions import (
+    BadRequestException,
+    ForbiddenException,
+    NotFoundException,
+)
 
 
 async def create_professional_profile(
@@ -81,7 +84,9 @@ async def create_full_professional_profile(
     return profile
 
 
-async def get_professional_profile(db: AsyncSession, profile_id: int) -> ProfessionalProfile:
+async def get_professional_profile(
+    db: AsyncSession, profile_id: int
+) -> ProfessionalProfile:
     profile = await professional_crud.get_with_relations(db, id=profile_id)
     if not profile:
         raise NotFoundException("Professional profile not found")
@@ -98,7 +103,10 @@ async def get_professional_profile_by_user(
 
 
 async def update_professional_profile(
-    db: AsyncSession, user_id: int, profile_id: int, profile_in: ProfessionalProfileUpdate
+    db: AsyncSession,
+    user_id: int,
+    profile_id: int,
+    profile_in: ProfessionalProfileUpdate,
 ) -> ProfessionalProfile:
     profile = await get_professional_profile(db, profile_id)
 
@@ -112,19 +120,21 @@ async def update_professional_profile(
         setattr(profile, field, value)
 
     if profile_in.tags is not None:
-        await db.execute(
-            ProfileTag.__table__.delete().where(ProfileTag.profile_id == profile.id)
-        )
+        try:
+            delete(ProfileTag).where(ProfileTag.profile_id == profile.id)
+        except Exception as e:
+            BadRequestException(f"Error deleting tags: {e}")
+
         for tag_name in profile_in.tags:
             tag = ProfileTag(profile_id=profile.id, name=tag_name)
             db.add(tag)
 
     if profile_in.unavailable_dates is not None:
-        await db.execute(
-            UnavailableDate.__table__.delete().where(
-                UnavailableDate.profile_id == profile.id
-            )
-        )
+        try:
+            delete(UnavailableDate).where(UnavailableDate.profile_id == profile.id)
+        except Exception as e:
+            BadRequestException(f"Error deleting unavailable dates: {e}")
+
         for date_in in profile_in.unavailable_dates:
             unavailable = UnavailableDate(
                 profile_id=profile.id,
@@ -146,7 +156,7 @@ async def delete_professional_profile(
     if profile.user_id != user_id:
         raise ForbiddenException("Not authorized to delete this profile")
 
-    await professional_crud.delete(db, id=profile.id)
+    await professional_crud.delete(db, pk=profile.id)
     await db.commit()
 
 

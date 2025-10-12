@@ -1,4 +1,3 @@
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import create_access_token, get_password_hash, verify_password
@@ -6,7 +5,7 @@ from app.crud.user import user_crud
 from app.models.user import User
 from app.schemas.auth import LoginResponse
 from app.schemas.user import UserResponse
-from app.utils.exceptions import BadRequestException, UnauthorizedException
+from app.utils.exceptions import UnauthorizedException
 
 
 async def authenticate_user(db: AsyncSession, email: str, password: str) -> User:
@@ -24,8 +23,8 @@ async def authenticate_user(db: AsyncSession, email: str, password: str) -> User
 async def login(db: AsyncSession, email: str, password: str) -> LoginResponse:
     user = await authenticate_user(db, email, password)
 
-    role_value = user.role.value if hasattr(user.role, 'value') else user.role
-    
+    role_value = user.role.value if hasattr(user.role, "value") else user.role
+
     token_data = {
         "id": user.id,
         "email": user.email,

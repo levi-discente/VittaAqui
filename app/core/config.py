@@ -1,4 +1,3 @@
-
 from pydantic import PostgresDsn, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -32,4 +31,5 @@ class Settings(BaseSettings):
     )
 
 
+# pyright: reportCallIssue=false
 settings = Settings()

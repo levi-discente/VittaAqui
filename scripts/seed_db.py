@@ -1,27 +1,31 @@
-
 import asyncio
 import logging
 
-from sqlalchemy import select, func
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.core.config import settings
 from app.core.security import get_password_hash
-from app.models.user import User
+from app.models.enums import ProfessionalCategory, Role
 from app.models.professional import ProfessionalProfile, ProfileTag
-from app.models.enums import Role, ProfessionalCategory
+from app.models.user import User
 
 logger = logging.getLogger(__name__)
 
 
 async def seed_database():
     engine = create_async_engine(str(settings.database_url), echo=False)
-    AsyncSessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    async_session_local = async_sessionmaker(
+        engine, class_=AsyncSession, expire_on_commit=False
+    )
 
-    async with AsyncSessionLocal() as session:
+    async with async_session_local() as session:
         try:
             result = await session.execute(select(func.count()).select_from(User))
             count = result.scalar()
+
+            if not count:
+                count = 0
 
             if count > 0:
                 logger.info("Database already has data. Skipping seed.")
@@ -41,7 +45,7 @@ async def seed_database():
                 cep="01310-100",
                 uf="SP",
                 city="São Paulo",
-                address="Av. Paulista, 1000"
+                address="Av. Paulista, 1000",
             )
             session.add(patient1)
 
@@ -55,7 +59,7 @@ async def seed_database():
                 cep="01310-200",
                 uf="SP",
                 city="São Paulo",
-                address="Av. Paulista, 2000"
+                address="Av. Paulista, 2000",
             )
             session.add(patient2)
 
@@ -69,7 +73,7 @@ async def seed_database():
                 cep="01310-300",
                 uf="SP",
                 city="São Paulo",
-                address="Av. Paulista, 3000"
+                address="Av. Paulista, 3000",
             )
             session.add(prof1)
             await session.flush()
@@ -87,7 +91,7 @@ async def seed_database():
                 num_reviews=120,
                 available_days_of_week="monday,tuesday,wednesday,thursday,friday",
                 start_hour="08:00",
-                end_hour="18:00"
+                end_hour="18:00",
             )
             session.add(profile1)
             await session.flush()
@@ -106,7 +110,7 @@ async def seed_database():
                 cep="01310-400",
                 uf="SP",
                 city="São Paulo",
-                address="Av. Paulista, 4000"
+                address="Av. Paulista, 4000",
             )
             session.add(prof2)
             await session.flush()
@@ -124,7 +128,7 @@ async def seed_database():
                 num_reviews=85,
                 available_days_of_week="monday,wednesday,friday",
                 start_hour="09:00",
-                end_hour="17:00"
+                end_hour="17:00",
             )
             session.add(profile2)
             await session.flush()
@@ -143,7 +147,7 @@ async def seed_database():
                 cep="01310-500",
                 uf="SP",
                 city="São Paulo",
-                address="Av. Paulista, 5000"
+                address="Av. Paulista, 5000",
             )
             session.add(prof3)
             await session.flush()
@@ -161,7 +165,7 @@ async def seed_database():
                 num_reviews=200,
                 available_days_of_week="monday,tuesday,wednesday,thursday,friday,saturday",
                 start_hour="10:00",
-                end_hour="20:00"
+                end_hour="20:00",
             )
             session.add(profile3)
             await session.flush()

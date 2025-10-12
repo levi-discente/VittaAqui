@@ -1,5 +1,57 @@
 # VittaAqui
 
+<!--toc:start-->
+
+- [VittaAqui](#vittaaqui)
+  - [🚀 Stack Tecnológica](#🚀-stack-tecnológica)
+  - [📋 Pré-requisitos](#📋-pré-requisitos)
+  - [🔧 Instalação](#🔧-instalação)
+    - [Opção 1: Docker (Recomendado)](#opção-1-docker-recomendado)
+    - [Opção 2: Local com uv](#opção-2-local-com-uv)
+  - [🐳 Docker](#🐳-docker)
+    - [Comandos Úteis](#comandos-úteis)
+    - [Modo Desenvolvimento (Automático)](#modo-desenvolvimento-automático)
+    - [Dados de Exemplo (Seed)](#dados-de-exemplo-seed)
+  - [✨ Funcionalidades Principais](#funcionalidades-principais)
+    - [🏥 Sistema de Agendamentos](#🏥-sistema-de-agendamentos)
+    - [🔐 Autenticação e Autorização](#🔐-autenticação-e-autorização)
+    - [📊 Compatibilidade Frontend](#📊-compatibilidade-frontend)
+  - [📦 Estrutura do Projeto](#📦-estrutura-do-projeto)
+  - [🔐 Autenticação](#🔐-autenticação)
+  - [📝 Migrations](#📝-migrations)
+  - [🌐 API Endpoints](#🌐-api-endpoints)
+    - [🔐 Autenticação (`/api/auth`)](#🔐-autenticação-apiauth)
+      - [**POST /api/auth/register**](#post-apiauthregister)
+      - [**POST /api/auth/login**](#post-apiauthlogin)
+    - [👤 Usuários (`/api/users` ou `/api/user`)](#👤-usuários-apiusers-ou-apiuser)
+    - [👨‍⚕️ Profissionais (`/api/professionals` ou `/api/professional`)](#👨‍️-profissionais-apiprofessionals-ou-apiprofessional)
+      - [**GET /api/professionals/** ou **GET /api/professional/list**](#get-apiprofessionals-ou-get-apiprofessionallist)
+      - [**GET /api/professionals/{profile_id}**](#get-apiprofessionalsprofileid)
+      - [**GET /api/professional/profile/user/{user_id}**](#get-apiprofessionalprofileuseruserid)
+      - [**GET /api/professionals/me**](#get-apiprofessionalsme)
+      - [**POST /api/professionals/**](#post-apiprofessionals)
+      - [**PUT /api/professionals/{profile_id}** ou **PUT /api/professionals/me**](#put-apiprofessionalsprofileid-ou-put-apiprofessionalsme)
+      - [**GET /api/professionals/{profile_id}/appointments**](#get-apiprofessionalsprofileidappointments)
+      - [**GET /api/professionals/{profile_id}/available-slots**](#get-apiprofessionalsprofileidavailable-slots)
+    - [📅 Agendamentos (`/api/appointments`)](#📅-agendamentos-apiappointments)
+      - [**POST /api/appointments/**](#post-apiappointments)
+      - [**GET /api/appointments/my** ou **GET /api/appointments/my-appointments**](#get-apiappointmentsmy-ou-get-apiappointmentsmy-appointments)
+      - [**GET /api/appointments/{appointment_id}**](#get-apiappointmentsappointmentid)
+      - [**PUT /api/appointments/{appointment_id}**](#put-apiappointmentsappointmentid)
+      - [**DELETE /api/appointments/{appointment_id}**](#delete-apiappointmentsappointmentid)
+    - [🔑 Autenticação em Rotas Protegidas](#🔑-autenticação-em-rotas-protegidas)
+  - [🧪 Testes](#🧪-testes)
+  - [🔍 Qualidade de Código](#🔍-qualidade-de-código)
+  - [📚 Documentação](#📚-documentação)
+  - [📝 Notas Importantes](#📝-notas-importantes)
+    - [Validações](#validações)
+    - [Comportamentos](#comportamentos)
+    - [Categorias Profissionais](#categorias-profissionais)
+    - [Status de Agendamento](#status-de-agendamento)
+  - [🤝 Contribuindo](#🤝-contribuindo)
+  - [📄 Licença](#📄-licença)
+  <!--toc:end-->
+
 Plataforma de telemedicina e agendamento de consultas desenvolvida com **FastAPI**, **SQLAlchemy 2.0**, **Alembic** e **uv**.
 
 > Este sistema é um trabalho da disciplina "Projeto e Prática I".
@@ -32,7 +84,7 @@ cp .env.example .env
 docker compose up --build
 ```
 
-Acesse: http://localhost:8000/docs
+Acesse: <http://localhost:8000/docs>
 
 ### Opção 2: Local com uv
 
@@ -75,6 +127,7 @@ docker compose down -v
 O Docker Compose verifica a variável `DEBUG` no `.env`:
 
 **DEBUG=True** (Modo Dev):
+
 1. ✅ Aguarda PostgreSQL estar pronto
 2. ✅ Verifica se existem migrations
 3. ✅ Se não existir, cria automaticamente com `alembic revision --autogenerate`
@@ -84,6 +137,7 @@ O Docker Compose verifica a variável `DEBUG` no `.env`:
 7. ✅ Inicia aplicação
 
 **DEBUG=False** (Produção):
+
 - Executa apenas migrations existentes
 - Não popula dados de exemplo
 
@@ -92,12 +146,14 @@ O Docker Compose verifica a variável `DEBUG` no `.env`:
 ### Dados de Exemplo (Seed)
 
 O banco é automaticamente populado com:
+
 - **2 pacientes** (João, Maria)
 - **3 profissionais** (Dr. Carlos - Médico, Dra. Ana - Nutricionista, Dr. Roberto - Psicólogo)
 - **Senha padrão**: `senha123`
 - **CPFs válidos** e únicos
 
 **Logins disponíveis:**
+
 - `joao@example.com` (Paciente - CPF: 529.982.247-25)
 - `maria@example.com` (Paciente - CPF: 714.287.938-60)
 - `carlos@example.com` (Médico - CPF: 863.783.451-20)
@@ -107,6 +163,7 @@ O banco é automaticamente populado com:
 ## ✨ Funcionalidades Principais
 
 ### 🏥 Sistema de Agendamentos
+
 - **Criação automática de perfil profissional** ao registrar com `role=professional`
 - **Cálculo de horários disponíveis** baseado em:
   - Horários de atendimento configurados
@@ -118,12 +175,14 @@ O banco é automaticamente populado com:
 - **Gerenciamento de status** (pending, confirmed, completed, cancelled)
 
 ### 🔐 Autenticação e Autorização
+
 - **JWT tokens** com expiração configurável
 - **Validação de CPF** no registro
 - **Senha mínima de 8 caracteres**
 - **Rotas protegidas** por role (patient/professional)
 
 ### 📊 Compatibilidade Frontend
+
 - **Rotas com aliases** para compatibilidade (`/api/user` e `/api/users`)
 - **Form-urlencoded** para registro e login
 - **Timezone automático** (remove timezone de datetime)
@@ -188,9 +247,11 @@ alembic history
 ### 🔐 Autenticação (`/api/auth`)
 
 #### **POST /api/auth/register**
+
 Criar nova conta de usuário.
 
 **Entrada (form-urlencoded):**
+
 - `name`, `email`, `password` (min 8 chars), `cpf` (11 dígitos)
 - `role`: `"patient"` ou `"professional"`
 - `phone`, `cep`, `uf`, `city`, `address` (opcionais)
@@ -201,16 +262,24 @@ Criar nova conta de usuário.
 **Nota:** Profissionais têm perfil criado automaticamente com valores padrão.
 
 #### **POST /api/auth/login**
+
 Fazer login e obter token JWT.
 
 **Entrada (form-urlencoded):**
+
 - `email`, `password`
 
 **Saída:**
+
 ```json
 {
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "user": { "id": 1, "name": "João", "email": "joao@example.com", "role": "patient" }
+  "user": {
+    "id": 1,
+    "name": "João",
+    "email": "joao@example.com",
+    "role": "patient"
+  }
 }
 ```
 
@@ -229,9 +298,11 @@ Fazer login e obter token JWT.
 ### 👨‍⚕️ Profissionais (`/api/professionals` ou `/api/professional`)
 
 #### **GET /api/professionals/** ou **GET /api/professional/list**
+
 Listar profissionais com filtros.
 
 **Query Params:**
+
 - `name` - Buscar por nome
 - `category` - Filtrar por categoria
 - `tags` - Filtrar por tags (array)
@@ -239,23 +310,29 @@ Listar profissionais com filtros.
 - `skip`, `limit` - Paginação
 
 **Exemplo:**
+
 ```bash
 GET /api/professionals/?category=physician&name=Carlos&skip=0&limit=10
 ```
 
 #### **GET /api/professionals/{profile_id}**
+
 Buscar perfil profissional por ID do perfil.
 
 #### **GET /api/professional/profile/user/{user_id}**
+
 Buscar perfil profissional por ID do usuário.
 
 #### **GET /api/professionals/me**
+
 Buscar meu perfil profissional (usuário logado).
 
 #### **POST /api/professionals/**
+
 Criar perfil profissional.
 
 **Entrada (JSON):**
+
 ```json
 {
   "bio": "Médico especialista em cardiologia",
@@ -269,44 +346,52 @@ Criar perfil profissional.
   "start_hour": "08:00",
   "end_hour": "18:00",
   "tags": ["Cardiologia", "Clínica Geral"],
-  "unavailable_dates": [{"date": "2025-12-25", "reason": "Feriado"}]
+  "unavailable_dates": [{ "date": "2025-12-25", "reason": "Feriado" }]
 }
 ```
 
 #### **PUT /api/professionals/{profile_id}** ou **PUT /api/professionals/me**
+
 Atualizar perfil profissional.
 
 #### **GET /api/professionals/{profile_id}/appointments**
+
 Listar agendamentos de um profissional específico.
 
 **Query Params:**
+
 - `start_date`, `end_date` - Filtrar por período (formato: YYYY-MM-DD)
 - `skip`, `limit` - Paginação
 
 **Exemplo:**
+
 ```bash
 GET /api/professionals/1/appointments?start_date=2025-10-01&end_date=2025-10-31
 ```
 
 #### **GET /api/professionals/{profile_id}/available-slots**
+
 Calcular horários disponíveis para agendamento.
 
 **Query Params:**
+
 - `target_date` - Data desejada (obrigatório, formato: YYYY-MM-DD)
 - `duration_minutes` - Duração do slot (default: 60, min: 15, max: 480)
 
 **Exemplo:**
+
 ```bash
 GET /api/professionals/1/available-slots?target_date=2025-10-13&duration_minutes=60
 ```
 
 **Saída:**
+
 ```json
 {
   "date": "2025-10-13",
   "available_slots": [
-    {"start_time": "08:00", "end_time": "09:00"},
-    {"start_time": "09:00", "end_time": "10:00"}
+    { "start_time": "08:00", "end_time": "09:00" },
+    { "start_time": "09:00", "end_time": "10:00" }
   ],
   "unavailable_reason": null
 }
@@ -317,9 +402,11 @@ GET /api/professionals/1/available-slots?target_date=2025-10-13&duration_minutes
 ### 📅 Agendamentos (`/api/appointments`)
 
 #### **POST /api/appointments/**
+
 Criar agendamento (apenas pacientes).
 
 **Entrada (JSON):**
+
 ```json
 {
   "professional_id": 1,
@@ -331,17 +418,21 @@ Criar agendamento (apenas pacientes).
 **Nota:** Timezone é removido automaticamente.
 
 #### **GET /api/appointments/my** ou **GET /api/appointments/my-appointments**
+
 Buscar meus agendamentos (paciente ou profissional).
 
 **Query Params:** `skip`, `limit`
 
 #### **GET /api/appointments/{appointment_id}**
+
 Buscar agendamento por ID.
 
 #### **PUT /api/appointments/{appointment_id}**
+
 Atualizar agendamento.
 
 **Entrada (JSON - todos opcionais):**
+
 ```json
 {
   "start_time": "2025-10-13T21:00:00",
@@ -353,6 +444,7 @@ Atualizar agendamento.
 **Status:** `pending`, `confirmed`, `completed`, `cancelled`
 
 #### **DELETE /api/appointments/{appointment_id}**
+
 Cancelar agendamento.
 
 ---
@@ -366,6 +458,7 @@ Authorization: Bearer {token}
 ```
 
 **Exemplo:**
+
 ```bash
 curl http://localhost:8000/api/user/me \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
@@ -393,13 +486,14 @@ pre-commit run --all-files
 
 ## 📚 Documentação
 
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
-- **OpenAPI JSON**: http://localhost:8000/openapi.json
+- **Swagger UI**: <http://localhost:8000/docs>
+- **ReDoc**: <http://localhost:8000/redoc>
+- **OpenAPI JSON**: <http://localhost:8000/openapi.json>
 
 ## 📝 Notas Importantes
 
 ### Validações
+
 - **CPF**: Deve ter 11 dígitos e ser válido (algoritmo de validação)
 - **Senha**: Mínimo 8 caracteres
 - **Email**: Formato válido e único
@@ -407,6 +501,7 @@ pre-commit run --all-files
 - **Datas**: Formato ISO `YYYY-MM-DD` ou `YYYY-MM-DDTHH:MM:SS`
 
 ### Comportamentos
+
 - **Timezone**: Automaticamente removido de datetime (banco usa timestamp sem timezone)
 - **Strings vazias**: Convertidas para `null` em query params
 - **Perfil profissional**: Criado automaticamente ao registrar com `role=professional`
@@ -414,6 +509,7 @@ pre-commit run --all-files
 - **SQLAlchemy unique()**: Necessário em queries com `joinedload` de coleções
 
 ### Categorias Profissionais
+
 - `physician` - Médico
 - `nutritionist` - Nutricionista
 - `psychologist` - Psicólogo
@@ -421,6 +517,7 @@ pre-commit run --all-files
 - `other` - Outros
 
 ### Status de Agendamento
+
 - `pending` - Aguardando confirmação
 - `confirmed` - Confirmado
 - `completed` - Concluído

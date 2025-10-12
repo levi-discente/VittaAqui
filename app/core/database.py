@@ -1,4 +1,3 @@
-
 from collections.abc import AsyncGenerator
 
 from sqlalchemy import MetaData

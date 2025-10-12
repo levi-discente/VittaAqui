@@ -1,4 +1,3 @@
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.user import user_crud
@@ -21,7 +20,9 @@ async def create_user(db: AsyncSession, user_in: UserCreate) -> User:
 
     hashed_password = hash_password(user_in.password)
 
-    user = await user_crud.create_user(db, obj_in=user_in, hashed_password=hashed_password)
+    user = await user_crud.create_user(
+        db, obj_in=user_in, hashed_password=hashed_password
+    )
 
     if user_in.role == Role.PROFESSIONAL:
         if not user_in.profissional_identification or not user_in.category:
@@ -53,7 +54,7 @@ async def create_user(db: AsyncSession, user_in: UserCreate) -> User:
 
 
 async def get_user(db: AsyncSession, user_id: int) -> User:
-    user = await user_crud.get(db, id=user_id)
+    user = await user_crud.get(db, pk=user_id)
     if not user:
         raise NotFoundException("User not found")
     return user
@@ -75,9 +76,11 @@ async def update_user(db: AsyncSession, user_id: int, user_in: UserUpdate) -> Us
 
 async def delete_user(db: AsyncSession, user_id: int) -> None:
     user = await get_user(db, user_id)
-    await user_crud.delete(db, id=user.id)
+    await user_crud.delete(db, pk=user.id)
     await db.commit()
 
 
-async def get_all_users(db: AsyncSession, skip: int = 0, limit: int = 100) -> list[User]:
+async def get_all_users(
+    db: AsyncSession, skip: int = 0, limit: int = 100
+) -> list[User]:
     return await user_crud.get_multi(db, skip=skip, limit=limit)

@@ -1,12 +1,15 @@
-
-from datetime import date, datetime
+from datetime import date
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.appointment import appointment_crud
 from app.models.appointment import Appointment
 from app.models.enums import AppointmentStatus
-from app.schemas.appointment import AppointmentCreate, AppointmentResponse, AppointmentUpdate
+from app.schemas.appointment import (
+    AppointmentCreate,
+    AppointmentResponse,
+    AppointmentUpdate,
+)
 from app.utils.exceptions import ConflictException, NotFoundException
 
 
@@ -51,7 +54,9 @@ async def create_appointment(
 
 
 async def get_appointment(db: AsyncSession, appointment_id: int) -> Appointment:
-    appointment = await appointment_crud.get_with_relations(db, appointment_id=appointment_id)
+    appointment = await appointment_crud.get_with_relations(
+        db, appointment_id=appointment_id
+    )
     if not appointment:
         raise NotFoundException("Appointment not found")
     return appointment
@@ -70,7 +75,11 @@ async def get_patient_appointments(
             patient_id=apt.patient_id,
             patient_name=apt.patient.name if apt.patient else None,
             professional_id=apt.professional_id,
-            professional_name=apt.professional.user.name if apt.professional and apt.professional.user else None,
+            professional_name=(
+                apt.professional.user.name
+                if apt.professional and apt.professional.user
+                else None
+            ),
             start_time=apt.start_time,
             end_time=apt.end_time,
             status=apt.status,
@@ -125,7 +134,9 @@ async def update_appointment(
         if conflicts:
             raise ConflictException("Time slot already booked")
 
-    updated = await appointment_crud.update(db, db_obj=appointment, obj_in=appointment_in)
+    updated = await appointment_crud.update(
+        db, db_obj=appointment, obj_in=appointment_in
+    )
     await db.commit()
     await db.refresh(updated)
     return updated
@@ -133,7 +144,7 @@ async def update_appointment(
 
 async def delete_appointment(db: AsyncSession, appointment_id: int) -> None:
     appointment = await get_appointment(db, appointment_id)
-    await appointment_crud.delete(db, id=appointment.id)
+    await appointment_crud.delete(db, pk=appointment.id)
     await db.commit()
 
 
@@ -161,7 +172,11 @@ async def get_professional_appointments_by_date(
             patient_id=apt.patient_id,
             patient_name=apt.patient.name if apt.patient else None,
             professional_id=apt.professional_id,
-            professional_name=apt.professional.user.name if apt.professional and apt.professional.user else None,
+            professional_name=(
+                apt.professional.user.name
+                if apt.professional and apt.professional.user
+                else None
+            ),
             start_time=apt.start_time,
             end_time=apt.end_time,
             status=apt.status,

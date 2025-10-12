@@ -1,5 +1,4 @@
-
-from typing import Any, Generic, TypeVar
+from typing import Any, TypeVar
 
 from pydantic import BaseModel
 from sqlalchemy import select
@@ -12,14 +11,14 @@ CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 
 
-class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
-
+class CRUDBase[
+    ModelType: Base, CreateSchemaType: BaseModel, UpdateSchemaType: BaseModel
+]:
     def __init__(self, model: type[ModelType]):
         self.model = model
 
-    async def get(self, db: AsyncSession, id: int) -> ModelType | None:
-        result = await db.execute(select(self.model).where(self.model.id == id))
-        return result.scalar_one_or_none()
+    async def get(self, db: AsyncSession, *, pk: Any) -> ModelType | None:
+        return await db.get(self.model, pk)
 
     async def get_multi(
         self, db: AsyncSession, *, skip: int = 0, limit: int = 100
@@ -42,11 +41,11 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         db_obj: ModelType,
         obj_in: UpdateSchemaType | dict[str, Any],
     ) -> ModelType:
-        if isinstance(obj_in, dict):
-            update_data = obj_in
-        else:
-            update_data = obj_in.model_dump(exclude_unset=True)
-
+        update_data = (
+            obj_in
+            if isinstance(obj_in, dict)
+            else obj_in.model_dump(exclude_unset=True)
+        )
         for field, value in update_data.items():
             setattr(db_obj, field, value)
 
@@ -55,9 +54,9 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         await db.refresh(db_obj)
         return db_obj
 
-    async def delete(self, db: AsyncSession, *, id: int) -> ModelType | None:
-        obj = await self.get(db, id=id)
-        if obj:
+    async def delete(self, db: AsyncSession, *, pk: Any) -> ModelType | None:
+        obj = await db.get(self.model, pk)
+        if obj is not None:
             await db.delete(obj)
             await db.flush()
         return obj

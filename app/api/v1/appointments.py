@@ -1,4 +1,3 @@
-
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
@@ -7,7 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import CurrentUser
 from app.core.database import get_db
 from app.models.enums import Role
-from app.schemas.appointment import AppointmentCreate, AppointmentResponse, AppointmentUpdate
+from app.schemas.appointment import (
+    AppointmentCreate,
+    AppointmentResponse,
+    AppointmentUpdate,
+)
 from app.services import appointment as appointment_service
 from app.services import professional as professional_service
 from app.utils.exceptions import ForbiddenException
@@ -24,7 +27,9 @@ async def create_appointment(
     if current_user.role != Role.PATIENT:
         raise ForbiddenException("Only patients can create appointments")
 
-    appointment = await appointment_service.create_appointment(db, current_user.id, appointment_in)
+    appointment = await appointment_service.create_appointment(
+        db, current_user.id, appointment_in
+    )
 
     return AppointmentResponse(
         id=appointment.id,
@@ -53,7 +58,9 @@ async def get_my_appointments(
             db, current_user.id, skip=skip, limit=limit
         )
 
-    profile = await professional_service.get_professional_profile_by_user(db, current_user.id)
+    profile = await professional_service.get_professional_profile_by_user(
+        db, current_user.id
+    )
     return await appointment_service.get_professional_appointments(
         db, profile.id, skip=skip, limit=limit
     )
@@ -71,7 +78,9 @@ async def get_appointment(
         if appointment.patient_id != current_user.id:
             raise ForbiddenException("Not authorized to view this appointment")
     else:
-        profile = await professional_service.get_professional_profile_by_user(db, current_user.id)
+        profile = await professional_service.get_professional_profile_by_user(
+            db, current_user.id
+        )
         if appointment.professional_id != profile.id:
             raise ForbiddenException("Not authorized to view this appointment")
 
@@ -80,9 +89,11 @@ async def get_appointment(
         patient_id=appointment.patient_id,
         patient_name=appointment.patient.name if appointment.patient else None,
         professional_id=appointment.professional_id,
-        professional_name=appointment.professional.user.name
-        if appointment.professional and appointment.professional.user
-        else None,
+        professional_name=(
+            appointment.professional.user.name
+            if appointment.professional and appointment.professional.user
+            else None
+        ),
         start_time=appointment.start_time,
         end_time=appointment.end_time,
         status=appointment.status,
@@ -104,20 +115,26 @@ async def update_appointment(
         if appointment.patient_id != current_user.id:
             raise ForbiddenException("Not authorized to update this appointment")
     else:
-        profile = await professional_service.get_professional_profile_by_user(db, current_user.id)
+        profile = await professional_service.get_professional_profile_by_user(
+            db, current_user.id
+        )
         if appointment.professional_id != profile.id:
             raise ForbiddenException("Not authorized to update this appointment")
 
-    updated = await appointment_service.update_appointment(db, appointment_id, appointment_in)
+    updated = await appointment_service.update_appointment(
+        db, appointment_id, appointment_in
+    )
 
     return AppointmentResponse(
         id=updated.id,
         patient_id=updated.patient_id,
         patient_name=updated.patient.name if updated.patient else None,
         professional_id=updated.professional_id,
-        professional_name=updated.professional.user.name
-        if updated.professional and updated.professional.user
-        else None,
+        professional_name=(
+            updated.professional.user.name
+            if updated.professional and updated.professional.user
+            else None
+        ),
         start_time=updated.start_time,
         end_time=updated.end_time,
         status=updated.status,
@@ -138,7 +155,9 @@ async def delete_appointment(
         if appointment.patient_id != current_user.id:
             raise ForbiddenException("Not authorized to delete this appointment")
     else:
-        profile = await professional_service.get_professional_profile_by_user(db, current_user.id)
+        profile = await professional_service.get_professional_profile_by_user(
+            db, current_user.id
+        )
         if appointment.professional_id != profile.id:
             raise ForbiddenException("Not authorized to delete this appointment")
 
