@@ -104,23 +104,58 @@ O banco é automaticamente populado com:
 - `ana@example.com` (Nutricionista - CPF: 458.426.216-50)
 - `roberto@example.com` (Psicólogo - CPF: 291.658.734-91)
 
+## ✨ Funcionalidades Principais
+
+### 🏥 Sistema de Agendamentos
+- **Criação automática de perfil profissional** ao registrar com `role=professional`
+- **Cálculo de horários disponíveis** baseado em:
+  - Horários de atendimento configurados
+  - Dias da semana disponíveis
+  - Datas bloqueadas
+  - Agendamentos existentes
+- **Filtros avançados** para buscar profissionais (nome, categoria, tags, tipo de atendimento)
+- **Validação de conflitos** de horários
+- **Gerenciamento de status** (pending, confirmed, completed, cancelled)
+
+### 🔐 Autenticação e Autorização
+- **JWT tokens** com expiração configurável
+- **Validação de CPF** no registro
+- **Senha mínima de 8 caracteres**
+- **Rotas protegidas** por role (patient/professional)
+
+### 📊 Compatibilidade Frontend
+- **Rotas com aliases** para compatibilidade (`/api/user` e `/api/users`)
+- **Form-urlencoded** para registro e login
+- **Timezone automático** (remove timezone de datetime)
+- **Strings vazias tratadas** como `null` em filtros
+
 ## 📦 Estrutura do Projeto
 
 ```
 app/
-├── main.py
+├── main.py                 # Aplicação FastAPI
 ├── core/
-│   ├── config.py
-│   ├── database.py
-│   └── security.py
-├── models/
-├── schemas/
+│   ├── config.py          # Configurações (env vars)
+│   ├── database.py        # Setup do banco de dados
+│   └── security.py        # JWT e hashing de senhas
+├── models/                # Modelos SQLAlchemy
+│   ├── user.py
+│   ├── professional.py
+│   └── appointment.py
+├── schemas/               # Schemas Pydantic
+│   ├── user.py
+│   ├── professional.py
+│   └── appointment.py
 ├── api/
-│   ├── deps.py
-│   └── v1/
-├── crud/
-├── services/
-└── utils/
+│   ├── deps.py           # Dependências (auth, db)
+│   └── v1/               # Rotas da API v1
+│       ├── auth.py
+│       ├── users.py
+│       ├── professionals.py
+│       └── appointments.py
+├── crud/                 # Operações de banco de dados
+├── services/             # Lógica de negócio
+└── utils/                # Utilitários e exceções
 ```
 
 ## 🔐 Autenticação
@@ -148,32 +183,193 @@ alembic downgrade -1
 alembic history
 ```
 
-## 🌐 Endpoints
+## 🌐 API Endpoints
 
-### Auth
-- `POST /api/auth/register`
-- `POST /api/auth/login`
+### 🔐 Autenticação (`/api/auth`)
 
-### Users
-- `GET /api/users/me`
-- `PUT /api/users/me`
-- `DELETE /api/users/me`
-- `GET /api/users/{id}`
-- `GET /api/users/`
+#### **POST /api/auth/register**
+Criar nova conta de usuário.
 
-### Professionals
-- `POST /api/professionals/`
-- `GET /api/professionals/me`
-- `PUT /api/professionals/me`
-- `GET /api/professionals/`
-- `GET /api/professionals/{id}`
+**Entrada (form-urlencoded):**
+- `name`, `email`, `password` (min 8 chars), `cpf` (11 dígitos)
+- `role`: `"patient"` ou `"professional"`
+- `phone`, `cep`, `uf`, `city`, `address` (opcionais)
+- `profissional_identification`, `category` (obrigatórios se `role=professional`)
 
-### Appointments
-- `POST /api/appointments/`
-- `GET /api/appointments/my-appointments`
-- `GET /api/appointments/{id}`
-- `PUT /api/appointments/{id}`
-- `DELETE /api/appointments/{id}`
+**Categorias:** `physician`, `nutritionist`, `psychologist`, `personal_trainer`, `other`
+
+**Nota:** Profissionais têm perfil criado automaticamente com valores padrão.
+
+#### **POST /api/auth/login**
+Fazer login e obter token JWT.
+
+**Entrada (form-urlencoded):**
+- `email`, `password`
+
+**Saída:**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": { "id": 1, "name": "João", "email": "joao@example.com", "role": "patient" }
+}
+```
+
+---
+
+### 👤 Usuários (`/api/users` ou `/api/user`)
+
+- **GET /api/user/me** - Buscar perfil do usuário logado
+- **PUT /api/users/me** - Atualizar perfil
+- **DELETE /api/users/me** - Deletar conta
+- **GET /api/users/{user_id}** - Buscar usuário por ID
+- **GET /api/users/** - Listar todos os usuários (com paginação)
+
+---
+
+### 👨‍⚕️ Profissionais (`/api/professionals` ou `/api/professional`)
+
+#### **GET /api/professionals/** ou **GET /api/professional/list**
+Listar profissionais com filtros.
+
+**Query Params:**
+- `name` - Buscar por nome
+- `category` - Filtrar por categoria
+- `tags` - Filtrar por tags (array)
+- `only_online`, `only_presential` - Filtrar por tipo de atendimento
+- `skip`, `limit` - Paginação
+
+**Exemplo:**
+```bash
+GET /api/professionals/?category=physician&name=Carlos&skip=0&limit=10
+```
+
+#### **GET /api/professionals/{profile_id}**
+Buscar perfil profissional por ID do perfil.
+
+#### **GET /api/professional/profile/user/{user_id}**
+Buscar perfil profissional por ID do usuário.
+
+#### **GET /api/professionals/me**
+Buscar meu perfil profissional (usuário logado).
+
+#### **POST /api/professionals/**
+Criar perfil profissional.
+
+**Entrada (JSON):**
+```json
+{
+  "bio": "Médico especialista em cardiologia",
+  "category": "physician",
+  "profissional_identification": "CRM-123456",
+  "services": "Consultas, Exames",
+  "price": 200.0,
+  "only_online": true,
+  "only_presential": false,
+  "available_days_of_week": "monday,wednesday,friday",
+  "start_hour": "08:00",
+  "end_hour": "18:00",
+  "tags": ["Cardiologia", "Clínica Geral"],
+  "unavailable_dates": [{"date": "2025-12-25", "reason": "Feriado"}]
+}
+```
+
+#### **PUT /api/professionals/{profile_id}** ou **PUT /api/professionals/me**
+Atualizar perfil profissional.
+
+#### **GET /api/professionals/{profile_id}/appointments**
+Listar agendamentos de um profissional específico.
+
+**Query Params:**
+- `start_date`, `end_date` - Filtrar por período (formato: YYYY-MM-DD)
+- `skip`, `limit` - Paginação
+
+**Exemplo:**
+```bash
+GET /api/professionals/1/appointments?start_date=2025-10-01&end_date=2025-10-31
+```
+
+#### **GET /api/professionals/{profile_id}/available-slots**
+Calcular horários disponíveis para agendamento.
+
+**Query Params:**
+- `target_date` - Data desejada (obrigatório, formato: YYYY-MM-DD)
+- `duration_minutes` - Duração do slot (default: 60, min: 15, max: 480)
+
+**Exemplo:**
+```bash
+GET /api/professionals/1/available-slots?target_date=2025-10-13&duration_minutes=60
+```
+
+**Saída:**
+```json
+{
+  "date": "2025-10-13",
+  "available_slots": [
+    {"start_time": "08:00", "end_time": "09:00"},
+    {"start_time": "09:00", "end_time": "10:00"}
+  ],
+  "unavailable_reason": null
+}
+```
+
+---
+
+### 📅 Agendamentos (`/api/appointments`)
+
+#### **POST /api/appointments/**
+Criar agendamento (apenas pacientes).
+
+**Entrada (JSON):**
+```json
+{
+  "professional_id": 1,
+  "start_time": "2025-10-13T20:00:00",
+  "end_time": "2025-10-13T21:00:00"
+}
+```
+
+**Nota:** Timezone é removido automaticamente.
+
+#### **GET /api/appointments/my** ou **GET /api/appointments/my-appointments**
+Buscar meus agendamentos (paciente ou profissional).
+
+**Query Params:** `skip`, `limit`
+
+#### **GET /api/appointments/{appointment_id}**
+Buscar agendamento por ID.
+
+#### **PUT /api/appointments/{appointment_id}**
+Atualizar agendamento.
+
+**Entrada (JSON - todos opcionais):**
+```json
+{
+  "start_time": "2025-10-13T21:00:00",
+  "end_time": "2025-10-13T22:00:00",
+  "status": "confirmed"
+}
+```
+
+**Status:** `pending`, `confirmed`, `completed`, `cancelled`
+
+#### **DELETE /api/appointments/{appointment_id}**
+Cancelar agendamento.
+
+---
+
+### 🔑 Autenticação em Rotas Protegidas
+
+Todas as rotas exceto `/api/auth/register` e `/api/auth/login` requerem:
+
+```bash
+Authorization: Bearer {token}
+```
+
+**Exemplo:**
+```bash
+curl http://localhost:8000/api/user/me \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
 
 ## 🧪 Testes
 
@@ -200,6 +396,35 @@ pre-commit run --all-files
 - **Swagger UI**: http://localhost:8000/docs
 - **ReDoc**: http://localhost:8000/redoc
 - **OpenAPI JSON**: http://localhost:8000/openapi.json
+
+## 📝 Notas Importantes
+
+### Validações
+- **CPF**: Deve ter 11 dígitos e ser válido (algoritmo de validação)
+- **Senha**: Mínimo 8 caracteres
+- **Email**: Formato válido e único
+- **Horários**: Formato `HH:MM` (ex: `08:00`, `18:30`) ou vazio/null
+- **Datas**: Formato ISO `YYYY-MM-DD` ou `YYYY-MM-DDTHH:MM:SS`
+
+### Comportamentos
+- **Timezone**: Automaticamente removido de datetime (banco usa timestamp sem timezone)
+- **Strings vazias**: Convertidas para `null` em query params
+- **Perfil profissional**: Criado automaticamente ao registrar com `role=professional`
+- **Conflitos de horário**: Validados automaticamente ao criar/atualizar agendamentos
+- **SQLAlchemy unique()**: Necessário em queries com `joinedload` de coleções
+
+### Categorias Profissionais
+- `physician` - Médico
+- `nutritionist` - Nutricionista
+- `psychologist` - Psicólogo
+- `personal_trainer` - Personal Trainer
+- `other` - Outros
+
+### Status de Agendamento
+- `pending` - Aguardando confirmação
+- `confirmed` - Confirmado
+- `completed` - Concluído
+- `cancelled` - Cancelado
 
 ## 🤝 Contribuindo
 
