@@ -87,7 +87,7 @@ async def create_full_professional_profile(
 async def get_professional_profile(
     db: AsyncSession, profile_id: int
 ) -> ProfessionalProfile:
-    profile = await professional_crud.get_with_relations(db, id=profile_id)
+    profile = await professional_crud.get_with_relations(db, fk=profile_id)
     if not profile:
         raise NotFoundException("Professional profile not found")
     return profile
@@ -322,9 +322,9 @@ async def build_professional_response_with_reviews(
     from app.schemas.professional import ReviewSummary
 
     # Pegar as últimas N reviews
-    recent_reviews = sorted(
-        profile.reviews, key=lambda r: r.created_at, reverse=True
-    )[:limit_reviews]
+    recent_reviews = sorted(profile.reviews, key=lambda r: r.created_at, reverse=True)[
+        :limit_reviews
+    ]
 
     reviews_data = []
     for review in recent_reviews:

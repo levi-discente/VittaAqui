@@ -1,4 +1,3 @@
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
@@ -6,12 +5,19 @@ from sqlalchemy.orm import joinedload
 from app.crud.base import CRUDBase
 from app.models.professional import ProfessionalProfile, ProfileTag
 from app.models.user import User
-from app.schemas.professional import ProfessionalProfileCreate, ProfessionalProfileUpdate
+from app.schemas.professional import (
+    ProfessionalProfileCreate,
+    ProfessionalProfileUpdate,
+)
 
 
-class CRUDProfessionalProfile(CRUDBase[ProfessionalProfile, ProfessionalProfileCreate, ProfessionalProfileUpdate]):
+class CRUDProfessionalProfile(
+    CRUDBase[ProfessionalProfile, ProfessionalProfileCreate, ProfessionalProfileUpdate]
+):
 
-    async def get_by_user_id(self, db: AsyncSession, *, user_id: int) -> ProfessionalProfile | None:
+    async def get_by_user_id(
+        self, db: AsyncSession, *, user_id: int
+    ) -> ProfessionalProfile | None:
         result = await db.execute(
             select(ProfessionalProfile)
             .where(ProfessionalProfile.user_id == user_id)
@@ -23,10 +29,12 @@ class CRUDProfessionalProfile(CRUDBase[ProfessionalProfile, ProfessionalProfileC
         )
         return result.unique().scalar_one_or_none()
 
-    async def get_with_relations(self, db: AsyncSession, *, id: int) -> ProfessionalProfile | None:
+    async def get_with_relations(
+        self, db: AsyncSession, *, fk: int
+    ) -> ProfessionalProfile | None:
         result = await db.execute(
             select(ProfessionalProfile)
-            .where(ProfessionalProfile.id == id)
+            .where(ProfessionalProfile.id == fk)
             .options(
                 joinedload(ProfessionalProfile.user),
                 joinedload(ProfessionalProfile.tags),
