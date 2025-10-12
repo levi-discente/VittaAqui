@@ -1,4 +1,5 @@
 
+from datetime import date
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
@@ -7,11 +8,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import CurrentUser
 from app.core.database import get_db
 from app.models.enums import Role
+from app.schemas.appointment import AppointmentResponse
 from app.schemas.professional import (
+    AvailableSlotsResponse,
     ProfessionalProfileCreate,
     ProfessionalProfileResponse,
     ProfessionalProfileUpdate,
 )
+from app.services import appointment as appointment_service
 from app.services import professional as professional_service
 from app.utils.exceptions import ForbiddenException
 
@@ -147,6 +151,11 @@ async def list_professionals(
     skip: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(ge=1, le=100)] = 100,
 ):
+    # Converter strings vazias em None
+    category = category if category and category.strip() else None
+    name = name if name and name.strip() else None
+    tags = [t for t in (tags or []) if t and t.strip()] or None
+    
     return await professional_service.list_professionals(
         db,
         category=category,
@@ -156,6 +165,40 @@ async def list_professionals(
         only_presential=only_presential,
         skip=skip,
         limit=limit,
+    )
+
+
+@router.get("/user/{user_id}", response_model=ProfessionalProfileResponse)
+async def get_professional_profile_by_user_id(
+    user_id: int,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    profile = await professional_service.get_professional_profile_by_user(db, user_id)
+
+    return ProfessionalProfileResponse(
+        id=profile.id,
+        user_id=profile.user_id,
+        bio=profile.bio,
+        category=profile.category,
+        profissional_identification=profile.profissional_identification,
+        services=profile.services,
+        price=profile.price,
+        only_online=profile.only_online,
+        only_presential=profile.only_presential,
+        rating=profile.rating,
+        num_reviews=profile.num_reviews,
+        available_days_of_week=profile.available_days_of_week,
+        start_hour=profile.start_hour,
+        end_hour=profile.end_hour,
+        user_name=profile.user.name if profile.user else None,
+        email=profile.user.email if profile.user else None,
+        phone=profile.user.phone if profile.user else None,
+        cep=profile.user.cep if profile.user else None,
+        uf=profile.user.uf if profile.user else None,
+        city=profile.user.city if profile.user else None,
+        address=profile.user.address if profile.user else None,
+        tags=[tag.name for tag in profile.tags],
+        unavailable_dates=[],
     )
 
 
@@ -238,3 +281,31 @@ async def delete_professional_profile(
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     await professional_service.delete_professional_profile(db, current_user.id, profile_id)
+
+
+@router.get("/{profile_id}/appointments", response_model=list[AppointmentResponse])
+async def get_professional_appointments(
+    profile_id: int,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    start_date: Annotated[date | None, Query()] = None,
+    end_date: Annotated[date | None, Query()] = None,
+    skip: Annotated[int, Query(ge=0)] = 0,
+    limit: Annotated[int, Query(ge=1, le=100)] = 100,
+):
+    """Listar agendamentos de um profissional específico."""
+    return await appointment_service.get_professional_appointments_by_date(
+        db, profile_id, start_date=start_date, end_date=end_date, skip=skip, limit=limit
+    )
+
+
+@router.get("/{profile_id}/available-slots", response_model=AvailableSlotsResponse)
+async def get_available_slots(
+    profile_id: int,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    target_date: Annotated[date, Query()],
+    duration_minutes: Annotated[int, Query(ge=15, le=480)] = 60,
+):
+    """Calcular horários disponíveis de um profissional para uma data específica."""
+    return await professional_service.get_available_slots(
+        db, profile_id, target_date, duration_minutes
+    )

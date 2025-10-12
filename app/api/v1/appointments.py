@@ -41,6 +41,7 @@ async def create_appointment(
 
 
 @router.get("/my-appointments", response_model=list[AppointmentResponse])
+@router.get("/my", response_model=list[AppointmentResponse])
 async def get_my_appointments(
     current_user: CurrentUser,
     db: Annotated[AsyncSession, Depends(get_db)],

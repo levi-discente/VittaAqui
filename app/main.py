@@ -36,3 +36,7 @@ app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(users.router, prefix="/api/users", tags=["users"])
 app.include_router(professionals.router, prefix="/api/professionals", tags=["professionals"])
 app.include_router(appointments.router, prefix="/api/appointments", tags=["appointments"])
+
+# Rotas compatíveis com frontend antigo
+app.include_router(users.router, prefix="/api/user", tags=["user-legacy"])
+app.include_router(professionals.router, prefix="/api/professional", tags=["professional-legacy"])

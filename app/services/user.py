@@ -3,10 +3,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.user import user_crud
 from app.models.enums import Role
+from app.models.professional import ProfessionalProfile
 from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate
 from app.services.auth import hash_password
-from app.services.professional import create_professional_profile
 from app.utils.exceptions import BadRequestException, NotFoundException
 
 
@@ -29,12 +29,23 @@ async def create_user(db: AsyncSession, user_in: UserCreate) -> User:
                 "Professional identification and category are required for professionals"
             )
 
-        await create_professional_profile(
-            db,
+        # Criar perfil profissional com valores padrão
+        profile = ProfessionalProfile(
             user_id=user.id,
             profissional_identification=user_in.profissional_identification,
             category=user_in.category,
+            bio="Profissional de saúde",
+            services="",
+            price=0.0,
+            only_online=False,
+            only_presential=False,
+            rating=0.0,
+            num_reviews=0,
+            available_days_of_week="",
+            start_hour="",
+            end_hour="",
         )
+        db.add(profile)
 
     await db.commit()
     await db.refresh(user)

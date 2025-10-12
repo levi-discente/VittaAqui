@@ -1,5 +1,7 @@
 
-from pydantic import BaseModel, ConfigDict, Field
+from datetime import date
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.models.enums import ProfessionalCategory
 
@@ -51,8 +53,19 @@ class ProfessionalProfileBase(BaseModel):
     only_online: bool = False
     only_presential: bool = False
     available_days_of_week: str | None = None  # CSV: "monday,tuesday,wednesday"
-    start_hour: str | None = Field(None, pattern=r"^\d{2}:\d{2}$")  # "08:00"
-    end_hour: str | None = Field(None, pattern=r"^\d{2}:\d{2}$")  # "17:00"
+    start_hour: str | None = None  # "08:00"
+    end_hour: str | None = None  # "17:00"
+
+    @field_validator("start_hour", "end_hour", mode="before")
+    @classmethod
+    def validate_time_format(cls, v: str | None) -> str | None:
+        if v is None or v == "":
+            return None
+        # Validar formato HH:MM
+        import re
+        if not re.match(r"^\d{2}:\d{2}$", v):
+            raise ValueError("Time must be in HH:MM format")
+        return v
 
 
 class ProfessionalProfileCreate(ProfessionalProfileBase):
@@ -70,10 +83,21 @@ class ProfessionalProfileUpdate(BaseModel):
     only_online: bool | None = None
     only_presential: bool | None = None
     available_days_of_week: str | None = None
-    start_hour: str | None = Field(None, pattern=r"^\d{2}:\d{2}$")
-    end_hour: str | None = Field(None, pattern=r"^\d{2}:\d{2}$")
+    start_hour: str | None = None
+    end_hour: str | None = None
     tags: list[str] | None = None
     unavailable_dates: list[UnavailableDateCreate] | None = None
+
+    @field_validator("start_hour", "end_hour", mode="before")
+    @classmethod
+    def validate_time_format(cls, v: str | None) -> str | None:
+        if v is None or v == "":
+            return None
+        # Validar formato HH:MM
+        import re
+        if not re.match(r"^\d{2}:\d{2}$", v):
+            raise ValueError("Time must be in HH:MM format")
+        return v
 
 
 class ProfessionalProfileResponse(ProfessionalProfileBase):
@@ -95,3 +119,14 @@ class ProfessionalProfileResponse(ProfessionalProfileBase):
     unavailable_dates: list[UnavailableDateResponse] = []
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class TimeSlot(BaseModel):
+    start_time: str  # "08:00"
+    end_time: str    # "09:00"
+
+
+class AvailableSlotsResponse(BaseModel):
+    date: date
+    available_slots: list[TimeSlot]
+    unavailable_reason: str | None = None

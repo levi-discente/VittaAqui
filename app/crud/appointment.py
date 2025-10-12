@@ -1,5 +1,5 @@
 
-from datetime import datetime
+from datetime import date, datetime
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -98,6 +98,37 @@ class CRUDAppointment(CRUDBase[Appointment, AppointmentCreate, AppointmentUpdate
             )
         )
         return result.scalar_one_or_none()
+
+    async def get_by_professional_and_date(
+        self,
+        db: AsyncSession,
+        *,
+        professional_id: int,
+        start_date: date | None = None,
+        end_date: date | None = None,
+        skip: int = 0,
+        limit: int = 100,
+    ) -> list[Appointment]:
+        query = (
+            select(Appointment)
+            .where(Appointment.professional_id == professional_id)
+            .options(
+                joinedload(Appointment.patient),
+                joinedload(Appointment.professional).joinedload(ProfessionalProfile.user),
+            )
+        )
+
+        if start_date:
+            start_datetime = datetime.combine(start_date, datetime.min.time())
+            query = query.where(Appointment.start_time >= start_datetime)
+
+        if end_date:
+            end_datetime = datetime.combine(end_date, datetime.max.time())
+            query = query.where(Appointment.start_time <= end_datetime)
+
+        query = query.offset(skip).limit(limit)
+        result = await db.execute(query)
+        return list(result.scalars().all())
 
 
 appointment_crud = CRUDAppointment(Appointment)

@@ -1,4 +1,6 @@
 
+from datetime import date, datetime
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.appointment import appointment_crud
@@ -133,3 +135,38 @@ async def delete_appointment(db: AsyncSession, appointment_id: int) -> None:
     appointment = await get_appointment(db, appointment_id)
     await appointment_crud.delete(db, id=appointment.id)
     await db.commit()
+
+
+async def get_professional_appointments_by_date(
+    db: AsyncSession,
+    professional_id: int,
+    start_date: date | None = None,
+    end_date: date | None = None,
+    skip: int = 0,
+    limit: int = 100,
+) -> list[AppointmentResponse]:
+    """Buscar agendamentos de um profissional com filtro de data."""
+    appointments = await appointment_crud.get_by_professional_and_date(
+        db,
+        professional_id=professional_id,
+        start_date=start_date,
+        end_date=end_date,
+        skip=skip,
+        limit=limit,
+    )
+
+    return [
+        AppointmentResponse(
+            id=apt.id,
+            patient_id=apt.patient_id,
+            patient_name=apt.patient.name if apt.patient else None,
+            professional_id=apt.professional_id,
+            professional_name=apt.professional.user.name if apt.professional and apt.professional.user else None,
+            start_time=apt.start_time,
+            end_time=apt.end_time,
+            status=apt.status,
+            created_at=apt.created_at,
+            updated_at=apt.updated_at,
+        )
+        for apt in appointments
+    ]

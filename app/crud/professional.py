@@ -21,7 +21,7 @@ class CRUDProfessionalProfile(CRUDBase[ProfessionalProfile, ProfessionalProfileC
                 joinedload(ProfessionalProfile.unavailable_dates),
             )
         )
-        return result.scalar_one_or_none()
+        return result.unique().scalar_one_or_none()
 
     async def get_with_relations(self, db: AsyncSession, *, id: int) -> ProfessionalProfile | None:
         result = await db.execute(
@@ -33,7 +33,7 @@ class CRUDProfessionalProfile(CRUDBase[ProfessionalProfile, ProfessionalProfileC
                 joinedload(ProfessionalProfile.unavailable_dates),
             )
         )
-        return result.scalar_one_or_none()
+        return result.unique().scalar_one_or_none()
 
     async def get_by_identification(
         self, db: AsyncSession, *, identification: str
@@ -85,7 +85,7 @@ class CRUDProfessionalProfile(CRUDBase[ProfessionalProfile, ProfessionalProfileC
 
         query = query.offset(skip).limit(limit)
         result = await db.execute(query)
-        return list(result.scalars().all())
+        return list(result.unique().scalars().all())
 
 
 professional_crud = CRUDProfessionalProfile(ProfessionalProfile)

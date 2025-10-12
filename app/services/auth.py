@@ -24,10 +24,12 @@ async def authenticate_user(db: AsyncSession, email: str, password: str) -> User
 async def login(db: AsyncSession, email: str, password: str) -> LoginResponse:
     user = await authenticate_user(db, email, password)
 
+    role_value = user.role.value if hasattr(user.role, 'value') else user.role
+    
     token_data = {
         "id": user.id,
         "email": user.email,
-        "role": user.role.value,
+        "role": role_value,
         "name": user.name,
     }
     access_token = create_access_token(token_data)

@@ -1,13 +1,19 @@
 
+from datetime import date, datetime, timedelta
+
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.crud.appointment import appointment_crud
 from app.crud.professional import professional_crud
-from app.models.enums import ProfessionalCategory
+from app.models.enums import AppointmentStatus, ProfessionalCategory
 from app.models.professional import ProfessionalProfile, ProfileTag, UnavailableDate
 from app.schemas.professional import (
+    AvailableSlotsResponse,
     ProfessionalProfileCreate,
     ProfessionalProfileResponse,
     ProfessionalProfileUpdate,
+    TimeSlot,
 )
 from app.utils.exceptions import BadRequestException, ForbiddenException, NotFoundException
 
@@ -195,3 +201,102 @@ async def list_professionals(
         responses.append(response)
 
     return responses
+
+
+async def get_available_slots(
+    db: AsyncSession, profile_id: int, target_date: date, duration_minutes: int
+) -> AvailableSlotsResponse:
+    """Calcular horários disponíveis de um profissional para uma data específica."""
+    profile = await get_professional_profile(db, profile_id)
+
+    # Verificar se o profissional tem horários configurados
+    if not profile.start_hour or not profile.end_hour:
+        return AvailableSlotsResponse(
+            date=target_date,
+            available_slots=[],
+            unavailable_reason="Profissional não configurou horários de atendimento",
+        )
+
+    # Verificar dia da semana
+    weekday_map = {
+        0: "monday",
+        1: "tuesday",
+        2: "wednesday",
+        3: "thursday",
+        4: "friday",
+        5: "saturday",
+        6: "sunday",
+    }
+    weekday = weekday_map[target_date.weekday()]
+
+    available_days = (profile.available_days_of_week or "").split(",")
+    available_days = [d.strip().lower() for d in available_days if d.strip()]
+
+    if available_days and weekday not in available_days:
+        return AvailableSlotsResponse(
+            date=target_date,
+            available_slots=[],
+            unavailable_reason=f"Profissional não atende às {weekday}s",
+        )
+
+    # Verificar datas indisponíveis
+    unavailable_result = await db.execute(
+        select(UnavailableDate).where(
+            UnavailableDate.profile_id == profile_id,
+            UnavailableDate.date == str(target_date),
+        )
+    )
+    if unavailable_result.scalar_one_or_none():
+        return AvailableSlotsResponse(
+            date=target_date,
+            available_slots=[],
+            unavailable_reason="Data marcada como indisponível",
+        )
+
+    # Buscar agendamentos do dia
+    appointments = await appointment_crud.get_by_professional_and_date(
+        db, professional_id=profile_id, start_date=target_date, end_date=target_date
+    )
+
+    # Filtrar apenas agendamentos não cancelados
+    booked_slots = [
+        (apt.start_time.time(), apt.end_time.time())
+        for apt in appointments
+        if apt.status != AppointmentStatus.CANCELLED
+    ]
+
+    # Gerar slots disponíveis
+    start_hour, start_minute = map(int, profile.start_hour.split(":"))
+    end_hour, end_minute = map(int, profile.end_hour.split(":"))
+
+    current_time = datetime.combine(target_date, datetime.min.time()).replace(
+        hour=start_hour, minute=start_minute
+    )
+    end_time = datetime.combine(target_date, datetime.min.time()).replace(
+        hour=end_hour, minute=end_minute
+    )
+
+    available_slots = []
+
+    while current_time + timedelta(minutes=duration_minutes) <= end_time:
+        slot_start = current_time.time()
+        slot_end = (current_time + timedelta(minutes=duration_minutes)).time()
+
+        # Verificar se o slot está livre
+        is_available = True
+        for booked_start, booked_end in booked_slots:
+            if not (slot_end <= booked_start or slot_start >= booked_end):
+                is_available = False
+                break
+
+        if is_available:
+            available_slots.append(
+                TimeSlot(
+                    start_time=slot_start.strftime("%H:%M"),
+                    end_time=slot_end.strftime("%H:%M"),
+                )
+            )
+
+        current_time += timedelta(minutes=duration_minutes)
+
+    return AvailableSlotsResponse(date=target_date, available_slots=available_slots)
