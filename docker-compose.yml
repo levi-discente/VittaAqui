@@ -1,4 +1,5 @@
 version: '3.8'
+
 services:
   postgres:
     image: postgres:15
@@ -11,7 +12,35 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./init_professionals.sql:/docker-entrypoint-initdb.d/init_professionals.sql:ro
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vitta_user -d vitta_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - vitta_network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vitta_app
+    restart: always
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://vitta_user:vitta_pass@postgres:5432/vitta_db
+    volumes:
+      - .:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    entrypoint: ["/bin/bash", "/app/scripts/entrypoint.sh"]
+    networks:
+      - vitta_network
 
   mongo:
     image: mongo:6
@@ -19,3 +48,15 @@ services:
     restart: always
     ports:
       - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - vitta_network
+
+volumes:
+  postgres_data:
+  mongo_data:
+
+networks:
+  vitta_network:
+    driver: bridge

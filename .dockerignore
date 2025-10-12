@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+ENV/
+
+# Git
+.git/
+.gitignore
+
+# IDEs
+.idea/
+.vscode/
+.qodo/
+
+# Environment
+.env
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Temporary
+.tmp/
+*.log
+
+# Go (legacy)
+go.sum
+main
+
+# Documentation
+README*.md
+docs/
