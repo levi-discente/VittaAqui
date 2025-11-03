@@ -14,8 +14,10 @@ from app.schemas.professional import (
     ProfessionalProfileResponse,
     ProfessionalProfileUpdate,
 )
+from app.schemas.review import ReviewList, ReviewResponse, ReviewStats
 from app.services import appointment as appointment_service
 from app.services import professional as professional_service
+from app.services.review import review_service
 from app.utils.exceptions import ForbiddenException
 
 router = APIRouter()
@@ -209,8 +211,22 @@ async def get_professional_profile_by_user_id(
 async def get_professional_profile(
     profile_id: int,
     db: Annotated[AsyncSession, Depends(get_db)],
+    include_reviews: Annotated[bool, Query()] = True,
+    limit_reviews: Annotated[int, Query(ge=1, le=20)] = 5,
 ):
+    """
+    Get professional profile by ID.
+
+    By default includes the 5 most recent reviews.
+    Set include_reviews=false to exclude reviews.
+    """
     profile = await professional_service.get_professional_profile(db, profile_id)
+
+    if include_reviews:
+        response_data = await professional_service.build_professional_response_with_reviews(
+            profile, limit_reviews=limit_reviews
+        )
+        return ProfessionalProfileResponse(**response_data)
 
     return ProfessionalProfileResponse(
         id=profile.id,
@@ -236,6 +252,7 @@ async def get_professional_profile(
         address=profile.user.address if profile.user else None,
         tags=[tag.name for tag in profile.tags],
         unavailable_dates=[],
+        reviews=[],
     )
 
 
@@ -314,3 +331,45 @@ async def get_available_slots(
     return await professional_service.get_available_slots(
         db, profile_id, target_date, duration_minutes
     )
+
+
+@router.get("/{profile_id}/reviews", response_model=ReviewList)
+async def get_professional_reviews(
+    profile_id: int,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    skip: Annotated[int, Query(ge=0)] = 0,
+    limit: Annotated[int, Query(ge=1, le=100)] = 100,
+):
+    """
+    Get all reviews for a professional with pagination.
+
+    Returns list of reviews with patient information (unless anonymous).
+    """
+    reviews, total = await review_service.get_professional_reviews(
+        db, professional_id=profile_id, skip=skip, limit=limit
+    )
+
+    return ReviewList(
+        total=total,
+        items=[ReviewResponse.model_validate(review) for review in reviews],
+    )
+
+
+@router.get("/{profile_id}/reviews/stats", response_model=ReviewStats)
+async def get_professional_review_stats(
+    profile_id: int,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    """
+    Get review statistics for a professional.
+
+    Returns:
+    - Average rating
+    - Total number of reviews
+    - Distribution of ratings (1-5 stars)
+    """
+    stats = await review_service.get_professional_stats(
+        db, professional_id=profile_id
+    )
+
+    return ReviewStats(**stats)

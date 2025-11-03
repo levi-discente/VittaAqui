@@ -11,6 +11,7 @@ from app.models.enums import Role
 if TYPE_CHECKING:
     from app.models.appointment import Appointment
     from app.models.professional import ProfessionalProfile
+    from app.models.review import Review
 
 
 class User(Base):
@@ -44,6 +45,12 @@ class User(Base):
     patient_appointments: Mapped[list["Appointment"]] = relationship(
         back_populates="patient",
         foreign_keys="Appointment.patient_id",
+        cascade="all, delete-orphan",
+    )
+
+    patient_reviews: Mapped[list["Review"]] = relationship(
+        back_populates="patient",
+        foreign_keys="Review.patient_id",
         cascade="all, delete-orphan",
     )
 

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.v1 import appointments, auth, professionals, users
+from app.api.v1 import appointments, auth, professionals, reviews, users
 from app.core.config import settings
 
 app = FastAPI(
@@ -39,6 +39,7 @@ app.include_router(
 app.include_router(
     appointments.router, prefix="/api/appointments", tags=["appointments"]
 )
+app.include_router(reviews.router, prefix="/api/reviews", tags=["reviews"])
 
 # Rotas compatíveis com frontend antigo
 app.include_router(users.router, prefix="/api/user", tags=["user-legacy"])

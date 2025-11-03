@@ -87,7 +87,7 @@ async def create_full_professional_profile(
 async def get_professional_profile(
     db: AsyncSession, profile_id: int
 ) -> ProfessionalProfile:
-    profile = await professional_crud.get_with_relations(db, id=profile_id)
+    profile = await professional_crud.get_with_relations(db, fk=profile_id)
     if not profile:
         raise NotFoundException("Professional profile not found")
     return profile
@@ -310,3 +310,62 @@ async def get_available_slots(
         current_time += timedelta(minutes=duration_minutes)
 
     return AvailableSlotsResponse(date=target_date, available_slots=available_slots)
+
+
+async def build_professional_response_with_reviews(
+    profile: ProfessionalProfile,
+    limit_reviews: int = 5,
+) -> dict:
+    """
+    Constrói resposta do profissional incluindo reviews recentes.
+    """
+    from app.schemas.professional import ReviewSummary
+
+    # Pegar as últimas N reviews
+    recent_reviews = sorted(profile.reviews, key=lambda r: r.created_at, reverse=True)[
+        :limit_reviews
+    ]
+
+    reviews_data = []
+    for review in recent_reviews:
+        patient_name = None
+        if not review.is_anonymous and review.patient:
+            patient_name = review.patient.name
+
+        reviews_data.append(
+            ReviewSummary(
+                id=review.id,
+                rating=review.rating,
+                comment=review.comment,
+                patient_name=patient_name,
+                is_anonymous=review.is_anonymous,
+                created_at=review.created_at.isoformat(),
+            )
+        )
+
+    return {
+        "id": profile.id,
+        "user_id": profile.user_id,
+        "bio": profile.bio,
+        "category": profile.category,
+        "profissional_identification": profile.profissional_identification,
+        "services": profile.services,
+        "price": profile.price,
+        "only_online": profile.only_online,
+        "only_presential": profile.only_presential,
+        "rating": profile.rating,
+        "num_reviews": profile.num_reviews,
+        "available_days_of_week": profile.available_days_of_week,
+        "start_hour": profile.start_hour,
+        "end_hour": profile.end_hour,
+        "user_name": profile.user.name if profile.user else None,
+        "email": profile.user.email if profile.user else None,
+        "phone": profile.user.phone if profile.user else None,
+        "cep": profile.user.cep if profile.user else None,
+        "uf": profile.user.uf if profile.user else None,
+        "city": profile.user.city if profile.user else None,
+        "address": profile.user.address if profile.user else None,
+        "tags": [tag.name for tag in profile.tags],
+        "unavailable_dates": [],
+        "reviews": reviews_data,
+    }
