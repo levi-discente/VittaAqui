@@ -35,8 +35,10 @@ async def create_appointment(
         id=appointment.id,
         patient_id=appointment.patient_id,
         patient_name=current_user.name,
+        patient_image_url=current_user.profile_image_url,
         professional_id=appointment.professional_id,
         professional_name=None,
+        professional_image_url=None,
         start_time=appointment.start_time,
         end_time=appointment.end_time,
         status=appointment.status,
@@ -88,9 +90,15 @@ async def get_appointment(
         id=appointment.id,
         patient_id=appointment.patient_id,
         patient_name=appointment.patient.name if appointment.patient else None,
+        patient_image_url=appointment.patient.profile_image_url if appointment.patient else None,
         professional_id=appointment.professional_id,
         professional_name=(
             appointment.professional.user.name
+            if appointment.professional and appointment.professional.user
+            else None
+        ),
+        professional_image_url=(
+            appointment.professional.user.profile_image_url
             if appointment.professional and appointment.professional.user
             else None
         ),
@@ -129,9 +137,15 @@ async def update_appointment(
         id=updated.id,
         patient_id=updated.patient_id,
         patient_name=updated.patient.name if updated.patient else None,
+        patient_image_url=updated.patient.profile_image_url if updated.patient else None,
         professional_id=updated.professional_id,
         professional_name=(
             updated.professional.user.name
+            if updated.professional and updated.professional.user
+            else None
+        ),
+        professional_image_url=(
+            updated.professional.user.profile_image_url
             if updated.professional and updated.professional.user
             else None
         ),

@@ -38,6 +38,7 @@ async def create_professional_profile(
 
     return ProfessionalProfileResponse(
         id=profile.id,
+        profile_image_url=profile.user.profile_image_url if profile.user else None,
         user_id=profile.user_id,
         bio=profile.bio,
         category=profile.category,
@@ -97,6 +98,7 @@ async def get_my_professional_profile(
         uf=profile.user.uf if profile.user else None,
         city=profile.user.city if profile.user else None,
         address=profile.user.address if profile.user else None,
+        profile_image_url=profile.user.profile_image_url if profile.user else None,
         tags=[tag.name for tag in profile.tags],
         unavailable_dates=[],
     )
@@ -140,6 +142,7 @@ async def update_my_professional_profile(
         uf=current_user.uf,
         city=current_user.city,
         address=current_user.address,
+        profile_image_url=current_user.profile_image_url,
         tags=[],
         unavailable_dates=[],
     )
@@ -202,6 +205,7 @@ async def get_professional_profile_by_user_id(
         uf=profile.user.uf if profile.user else None,
         city=profile.user.city if profile.user else None,
         address=profile.user.address if profile.user else None,
+        profile_image_url=profile.user.profile_image_url if profile.user else None,
         tags=[tag.name for tag in profile.tags],
         unavailable_dates=[],
     )
@@ -250,6 +254,7 @@ async def get_professional_profile(
         uf=profile.user.uf if profile.user else None,
         city=profile.user.city if profile.user else None,
         address=profile.user.address if profile.user else None,
+        profile_image_url=profile.user.profile_image_url if profile.user else None,
         tags=[tag.name for tag in profile.tags],
         unavailable_dates=[],
         reviews=[],
@@ -289,6 +294,7 @@ async def update_professional_profile(
         uf=current_user.uf,
         city=current_user.city,
         address=current_user.address,
+        profile_image_url=current_user.profile_image_url,
         tags=[],
         unavailable_dates=[],
     )

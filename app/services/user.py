@@ -6,6 +6,7 @@ from app.models.professional import ProfessionalProfile
 from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate
 from app.services.auth import hash_password
+from app.services.s3 import s3_service
 from app.utils.exceptions import BadRequestException, NotFoundException
 
 
@@ -84,3 +85,22 @@ async def get_all_users(
     db: AsyncSession, skip: int = 0, limit: int = 100
 ) -> list[User]:
     return await user_crud.get_multi(db, skip=skip, limit=limit)
+
+
+async def upload_profile_image(
+    db: AsyncSession, user_id: int, file_content: bytes, file_name: str
+) -> User:
+    """Upload profile image for a user."""
+    user = await get_user(db, user_id)
+
+    # Upload to S3
+    upload_result = s3_service.upload_profile_image(
+        file_content=file_content, file_name=file_name, user_id=user_id
+    )
+
+    # Update user with new image URL
+    user.profile_image_url = upload_result["url"]
+    await db.commit()
+    await db.refresh(user)
+
+    return user

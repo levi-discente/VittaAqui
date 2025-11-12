@@ -18,6 +18,7 @@ dependencies = [
     "python-dotenv",
     "validate-docbr",
     "debugpy>=1.8.17",
+    "boto3>=1.35.0",
 ]
 
 [project.optional-dependencies]
