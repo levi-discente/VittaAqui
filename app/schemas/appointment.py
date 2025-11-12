@@ -59,8 +59,10 @@ class AppointmentResponse(BaseModel):
     id: int
     patient_id: int
     patient_name: str | None = None
+    patient_image_url: str | None = None
     professional_id: int
     professional_name: str | None = None
+    professional_image_url: str | None = None
     start_time: datetime
     end_time: datetime
     status: AppointmentStatus

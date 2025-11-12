@@ -28,6 +28,7 @@ async def register(
     address: Annotated[str | None, Form()] = None,
     profissional_identification: Annotated[str | None, Form()] = None,
     category: Annotated[str | None, Form()] = None,
+    profile_image_url: Annotated[str | None, Form()] = None,
 ):
     user_in = UserCreate(
         name=name,
@@ -42,6 +43,7 @@ async def register(
         address=address,
         profissional_identification=profissional_identification,
         category=category,
+        profile_image_url=profile_image_url,
     )
     user = await user_service.create_user(db, user_in)
     return UserResponse.model_validate(user)

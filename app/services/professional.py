@@ -205,6 +205,7 @@ async def list_professionals(
             uf=profile.user.uf if profile.user else None,
             city=profile.user.city if profile.user else None,
             address=profile.user.address if profile.user else None,
+            profile_image_url=profile.user.profile_image_url if profile.user else None,
             tags=[tag.name for tag in profile.tags],
             unavailable_dates=[],
         )
@@ -365,6 +366,7 @@ async def build_professional_response_with_reviews(
         "uf": profile.user.uf if profile.user else None,
         "city": profile.user.city if profile.user else None,
         "address": profile.user.address if profile.user else None,
+        "profile_image_url": profile.user.profile_image_url if profile.user else None,
         "tags": [tag.name for tag in profile.tags],
         "unavailable_dates": [],
         "reviews": reviews_data,

@@ -74,9 +74,15 @@ async def get_patient_appointments(
             id=apt.id,
             patient_id=apt.patient_id,
             patient_name=apt.patient.name if apt.patient else None,
+            patient_image_url=apt.patient.profile_image_url if apt.patient else None,
             professional_id=apt.professional_id,
             professional_name=(
                 apt.professional.user.name
+                if apt.professional and apt.professional.user
+                else None
+            ),
+            professional_image_url=(
+                apt.professional.user.profile_image_url
                 if apt.professional and apt.professional.user
                 else None
             ),
@@ -102,8 +108,10 @@ async def get_professional_appointments(
             id=apt.id,
             patient_id=apt.patient_id,
             patient_name=apt.patient.name if apt.patient else None,
+            patient_image_url=apt.patient.profile_image_url if apt.patient else None,
             professional_id=apt.professional_id,
             professional_name=None,
+            professional_image_url=None,
             start_time=apt.start_time,
             end_time=apt.end_time,
             status=apt.status,
@@ -171,9 +179,15 @@ async def get_professional_appointments_by_date(
             id=apt.id,
             patient_id=apt.patient_id,
             patient_name=apt.patient.name if apt.patient else None,
+            patient_image_url=apt.patient.profile_image_url if apt.patient else None,
             professional_id=apt.professional_id,
             professional_name=(
                 apt.professional.user.name
+                if apt.professional and apt.professional.user
+                else None
+            ),
+            professional_image_url=(
+                apt.professional.user.profile_image_url
                 if apt.professional and apt.professional.user
                 else None
             ),
