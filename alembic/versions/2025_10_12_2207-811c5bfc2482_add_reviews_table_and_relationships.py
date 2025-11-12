@@ -1,7 +1,7 @@
 """Add reviews table and relationships
 
 Revision ID: 811c5bfc2482
-Revises: 2f4ffa1ec927
+Revises: 39d7f44437e7
 Create Date: 2025-10-12 22:07:48.956593
 
 """
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = '811c5bfc2482'
-down_revision: Union[str, None] = '2f4ffa1ec927'
+down_revision: Union[str, None] = '39d7f44437e7'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
