@@ -16,6 +16,12 @@ class Settings(BaseSettings):
 
     cors_origins: str = "*"
 
+    # AWS S3 configuration
+    aws_access_key_id: str
+    aws_secret_access_key: str
+    aws_region: str = "sa-east-1"
+    aws_s3_bucket: str = "vitta-image-profile"
+
     @computed_field
     @property
     def cors_origins_list(self) -> list[str]:

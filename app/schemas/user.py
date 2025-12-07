@@ -15,6 +15,7 @@ class UserBase(BaseModel):
     uf: str | None = Field(None, max_length=2)
     city: str | None = Field(None, max_length=100)
     address: str | None = Field(None, max_length=255)
+    profile_image_url: str | None = Field(None, max_length=500)
 
     @field_validator("cpf")
     @classmethod

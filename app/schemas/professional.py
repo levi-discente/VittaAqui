@@ -114,6 +114,7 @@ class ProfessionalProfileResponse(ProfessionalProfileBase):
     uf: str | None = None
     city: str | None = None
     address: str | None = None
+    profile_image_url: str | None = None
 
     tags: list[str] = []
     unavailable_dates: list[UnavailableDateResponse] = []

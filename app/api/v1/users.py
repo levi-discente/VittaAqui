@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, File, Query, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import CurrentUser
@@ -85,3 +85,38 @@ async def delete_user(
         raise ForbiddenException("Not authorized to delete this user")
 
     await user_service.delete_user(db, user_id)
+
+
+@router.post("/me/profile-image", response_model=UserResponse)
+async def upload_my_profile_image(
+    current_user: CurrentUser,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    file: UploadFile = File(...),
+):
+    """Upload profile image for the current user."""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        logger.info(f"Uploading image for user {current_user.id}")
+        logger.info(f"File: {file.filename}, Content-Type: {file.content_type}")
+        
+        # Validate file type
+        if not file.content_type or not file.content_type.startswith("image/"):
+            logger.error(f"Invalid file type: {file.content_type}")
+            raise ForbiddenException("Only image files are allowed")
+
+        # Read file content
+        file_content = await file.read()
+        logger.info(f"File size: {len(file_content)} bytes")
+
+        # Upload image
+        user = await user_service.upload_profile_image(
+            db, current_user.id, file_content, file.filename or "profile.jpg"
+        )
+        
+        logger.info(f"Image uploaded successfully: {user.profile_image_url}")
+        return UserResponse.model_validate(user)
+    except Exception as e:
+        logger.error(f"Error uploading image: {str(e)}", exc_info=True)
+        raise

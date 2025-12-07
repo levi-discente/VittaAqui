@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+from jose import JWTError
 
-from app.core.security import create_access_token, get_password_hash, verify_password
+from app.core.security import create_access_token, decode_access_token, get_password_hash, verify_password
 from app.crud.user import user_crud
 from app.models.user import User
 from app.schemas.auth import LoginResponse
@@ -39,3 +40,22 @@ async def login(db: AsyncSession, email: str, password: str) -> LoginResponse:
 
 def hash_password(password: str) -> str:
     return get_password_hash(password)
+
+
+async def get_current_user_from_token(token: str, db: AsyncSession) -> User:
+    """Get current user from JWT token (for WebSocket authentication)."""
+    try:
+        payload = decode_access_token(token)
+        user_id: int | None = payload.get("id")
+        
+        if user_id is None:
+            raise UnauthorizedException("Invalid token")
+        
+        user = await user_crud.get(db, pk=user_id)
+        if user is None:
+            raise UnauthorizedException("User not found")
+        
+        return user
+        
+    except JWTError:
+        raise UnauthorizedException("Invalid token")

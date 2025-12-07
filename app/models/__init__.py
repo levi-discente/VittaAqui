@@ -1,9 +1,10 @@
 
 from app.models.appointment import Appointment
+from app.models.chat_message import ChatMessage
 from app.models.enums import AppointmentStatus, ProfessionalCategory, Role
 from app.models.professional import ProfessionalProfile, ProfileTag, UnavailableDate
 from app.models.review import Review
-from app.models.user import User
+from app.models.user import User    
 
 __all__ = [
     "User",
@@ -15,4 +16,5 @@ __all__ = [
     "Role",
     "ProfessionalCategory",
     "AppointmentStatus",
+    "ChatMessage",
 ]

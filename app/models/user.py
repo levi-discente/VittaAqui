@@ -30,6 +30,7 @@ class User(Base):
     uf: Mapped[str | None] = mapped_column(String(2), nullable=True)
     city: Mapped[str | None] = mapped_column(String(100), nullable=True)
     address: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    profile_image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(

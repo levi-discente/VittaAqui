@@ -38,6 +38,7 @@ class ReviewUpdate(BaseModel):
 class PatientInfo(BaseModel):
     id: int
     name: str
+    profile_image_url: str | None = None
 
     model_config = {"from_attributes": True}
 

@@ -3,11 +3,11 @@ set -e
 
 echo "🚀 Starting VittaAqui application..."
 
-echo "⏳ Waiting for PostgreSQL..."
-until pg_isready -h postgres -p 5432 -U vitta_user; do
-  echo "PostgreSQL is unavailable - sleeping"
-  sleep 2
-done
+# echo "⏳ Waiting for PostgreSQL..."
+# until pg_isready -h postgres -p 5432 -U vitta_user; do
+#   echo "PostgreSQL is unavailable - sleeping"
+#   sleep 2
+# done
 
 echo "✅ PostgreSQL is ready!"
 
@@ -37,4 +37,4 @@ fi
 echo "🎉 Database setup complete!"
 
 echo "🚀 Starting FastAPI application..."
-exec uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+exec uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app/app --reload-delay 0.5

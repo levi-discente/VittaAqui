@@ -4,6 +4,7 @@ from sqlalchemy.orm import joinedload
 
 from app.crud.base import CRUDBase
 from app.models.professional import ProfessionalProfile, ProfileTag
+from app.models.review import Review
 from app.models.user import User
 from app.schemas.professional import (
     ProfessionalProfileCreate,
@@ -39,7 +40,7 @@ class CRUDProfessionalProfile(
                 joinedload(ProfessionalProfile.user),
                 joinedload(ProfessionalProfile.tags),
                 joinedload(ProfessionalProfile.unavailable_dates),
-                joinedload(ProfessionalProfile.reviews).joinedload("patient"),
+                joinedload(ProfessionalProfile.reviews).joinedload(Review.patient),
             )
         )
         return result.unique().scalar_one_or_none()

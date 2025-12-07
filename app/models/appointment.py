@@ -9,6 +9,7 @@ from app.core.database import Base
 from app.models.enums import AppointmentStatus
 
 if TYPE_CHECKING:
+    from app.models.chat_message import ChatMessage
     from app.models.professional import ProfessionalProfile
     from app.models.review import Review
     from app.models.user import User
@@ -51,6 +52,15 @@ class Appointment(Base):
         uselist=False,
         cascade="all, delete-orphan",
     )
+
+    chat_messages: Mapped[list["ChatMessage"]] = relationship(
+        back_populates="appointment",
+        foreign_keys="ChatMessage.appointment_id",
+        cascade="all, delete-orphan",
+        order_by="ChatMessage.created_at",
+    )
+    
+    reminder_sent: Mapped[bool] = mapped_column(default=False)
 
     def __repr__(self) -> str:
         return (
