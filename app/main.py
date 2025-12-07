@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.v1 import appointments, auth, professionals, reviews, users
+from app.api.v1 import appointments, auth, chat, chat_ws, professionals, reviews, users
 from app.core.config import settings
 
 app = FastAPI(
@@ -25,7 +25,7 @@ app.add_middleware(
 @app.get("/", tags=["health"])
 async def health_check():
     return {
-        "status": "www",
+        "status": "OK",
         "app": settings.app_name,
         "version": settings.app_version,
     }
@@ -40,6 +40,8 @@ app.include_router(
     appointments.router, prefix="/api/appointments", tags=["appointments"]
 )
 app.include_router(reviews.router, prefix="/api/reviews", tags=["reviews"])
+app.include_router(chat.router, prefix="/api/appointments", tags=["chat"])
+app.include_router(chat_ws.router, tags=["chat-websocket"])
 
 # Rotas compatíveis com frontend antigo
 app.include_router(users.router, prefix="/api/user", tags=["user-legacy"])
